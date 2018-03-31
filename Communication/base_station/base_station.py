@@ -5,6 +5,7 @@ import xbox
 import math
 import os
 
+speed_f = None 
 speed = 0
 delay = 0.1
 maxSpeed = 50
@@ -14,8 +15,15 @@ motorIncrements = 8
 maxSpeed = 100
 esc_connected = False
 
+
+def returnInfo():
+    data = [ord(x) for x in list(speed_f)]
+    data = data[:-1]
+    return data
+
 class BaseStation:
     def __init__(self):
+        global speed_f
         self.joy = None
         self.ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0', 
                                     baudrate = 115200,
@@ -118,7 +126,7 @@ class BaseStation:
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
     bs = BaseStation()
-    bs.calibrate_controller()
+    #bs.calibrate_controller()
     bs.calibrate_communication()
     bs.run()
 

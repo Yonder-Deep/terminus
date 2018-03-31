@@ -33,12 +33,14 @@ class MotorController:
         while self.is_radio_connected_locally():
 
             data = [ord(x) for x in list(self.radio.readline())]
+            if len(data) != 5:
+                continue
             data = data[:-1]
 
             print "Received data packet: " + str(data)
 
-            #self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR]))
-            #self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR])
+            self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR])
+            self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR])
 
         # Close serial conenction with local radio that is disconnected.
         self.radio.close()
@@ -118,8 +120,8 @@ def main():
     
     # COMM CHECK
     controller.calibrate_communication()
-    #pi_controller.calibrate_motors()
-    #pi_controller.run()
+    controller.calibrate_motors()
+    controller.run()
 
 
 if __name__ == '__main__':

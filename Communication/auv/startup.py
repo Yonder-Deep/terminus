@@ -24,33 +24,51 @@ class MotorController:
         pi:         Raspberry Pi GPIO object
         """
         # Connection to onboard radio.
-        self.radio = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0', baudrate = 115200)
+        self.radio = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0', 
+                                    baudrate = 115200,
+                                    parity = serial.PARITY_NONE,
+                                    stopbits = serial.STOPBITS_ONE,
+                                    bytesize = serial.EIGHTBITS, 
+                                    timeout = 5
+                                    )
 
         # Motor object definitions.
         self.motors = [Motor(gpio_pin=pin, pi=pi) for pin in motor_pins]
 
     def run(self):
-        while self.is_radio_connected_locally():
+        try:
+            while self.is_radio_connected_locally():
 
-            data = [ord(x) for x in list(self.radio.readline())]
-            if len(data) != 5:
-                continue
-            data = data[:-1]
+                data = [ord(x) for x in list(self.radio.readline())]
 
-            print "Received data packet: " + str(data)
+                # Check for timeout.
+                if len(data) == 0:
+                    self.zero_out_motors()
+                    self.calibrate_communication()
+                    self.radio.write('ESC\n')
+                    continue
+           
+                # Indicate that some data has been received.
+                self.radio.write('REC\n')
+            
+                # Check for packet loss - skip if packet is invalid.
+                if len(data) == 5:
+                    # Parse data - remove newline.
+                    data = data[:-1]
+                    print("Received data packet: " + str(data))
+            
+                    # Update motor values.
+                    self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR])
+                    self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR])
+        except:
+            # Close serial conenction with local radio that is disconnected.
+            self.radio.close()
 
-            self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR])
-            self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR])
+            # Zero out motors.
+            self.zero_out_motors()
 
-        # Close serial conenction with local radio that is disconnected.
-        self.radio.close()
-
-        # Zero out motors.
-        for motor in self.motors:
-            motor.set_speed(0)
-
-        print 'Radio disconnected'
-        exit(1)
+            print('Radio disconnected')
+            exit(1)
 
     def is_radio_connected_locally(self):
         return self.radio.isOpen()
@@ -58,19 +76,29 @@ class MotorController:
     def is_radio_connected(self):
         pass
 
+    def zero_out_motors(self):
+        for motor in self.motors:
+            motor.set_speed(0)
+
     def calibrate_motors(self):
-        print 'Calibrating ESC...'
+        print('Calibrating ESC...')
         for motor in self.motors:
             motor.calibrate_motor()
 
-        print 'Finished calibrating ESC' 
+        # Indicate that ESCs have been calibrated.
+        self.radio.write('ESC\n')
+
+        print('Finished calibrating ESC') 
 
     def calibrate_communication(self):
         self.radio.flush()
-        
+
         # Wait until signal received from base station.
-        while self.radio.readline() != 'CAL\n': 
-            pass
+        print("Waiting For Data:")
+        
+        data = self.radio.readline()
+        while data != 'CAL\n':
+            data = self.radio.readline()
        
         # Send signal to base station.
         self.radio.write('CAL\n')

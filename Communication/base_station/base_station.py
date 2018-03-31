@@ -5,7 +5,6 @@ import xbox
 import math
 import os
 
-speed_f = None 
 speed = 0
 delay = 0.1
 maxSpeed = 50
@@ -14,12 +13,6 @@ turnSpeed = 50
 motorIncrements = 8
 maxSpeed = 100
 esc_connected = False
-
-
-def returnInfo():
-    data = [ord(x) for x in list(speed_f)]
-    data = data[:-1]
-    return data
 
 class BaseStation:
     def __init__(self):

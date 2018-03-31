@@ -1,4 +1,4 @@
 #!/bin/bash
 
 sudo pigpiod
-sudo python ~/terminus/Communcation/auv/startup.py
+sudo python /home/pi/terminus/Communication/auv/startup.py

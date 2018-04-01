@@ -11,8 +11,8 @@ split_path = split_path[0:len(split_path) - 2]
 components_path = "/".join(split_path) + "/components"
 sys.path.append(components_path)
 
-from components.motor_controller import MotorController
-from components.radio import Radio
+from motor_controller import MotorController
+from radio import Radio
 
 # This serial code is sent when radio needs to reconnected to base station.
 ESC = 'ESC\n'
@@ -39,8 +39,9 @@ class AUV:
         motor speed  is received and updates motor speeds continuously.
         """
         try:
+            print(self.is_radio_connected_locally())
             while self.is_radio_connected_locally():
-
+                print('Looped')
                 # String received contains ASCII characters. This line decodes
                 # those characters into motor speed values.
                 data = [ord(x) for x in list(self.radio.readline())]
@@ -56,15 +57,17 @@ class AUV:
                 self.radio.write(REC)
 
                 # Check for packet loss - skip if packet is invalid.
+                print(len(data))
+                
                 if len(data) == 5:
                     # Parse data - remove newline.
                     data = data[:-1]
-                    print("Received data packet: " + str(data))
 
                     # Update motor values.
+
                     self.mc.update_motor_speeds(data)
 
-        except:
+        except Exception, e:
             # Close serial conenction with local radio that is disconnected.
             self.radio.close()
 
@@ -72,6 +75,7 @@ class AUV:
             self.mc.zero_out_motors()
 
             print('Radio disconnected')
+            
             exit(1)
 
     def is_radio_connected_locally(self):

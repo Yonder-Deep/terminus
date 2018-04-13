@@ -4,7 +4,7 @@ import zmq
 
 context = zmq.Context()
 socket = context.socket(zmq.REQ)
-socket.connect("tcp://169.254.199.158:5556")
+socket.connect("tcp://192.168.1.16:5555")
 
 while True:
     speed = raw_input("Enter a speed: ")

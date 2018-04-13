@@ -2,8 +2,12 @@ import serial
 import time
 import struct
 import xbox
-
 import math
+import os
+
+#print("Calibrating joystick driver...")
+#os.system('sudo xboxdrv --detach-kernel-driver')
+#time.sleep(2)
 
 joy = xbox.Joystick()
 speed = 0
@@ -13,17 +17,42 @@ minSpeed = 0
 turnSpeed = 50
 motorIncrements = 8
 maxSpeed = 100
+notConnected = True
+	
+ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0', 
+					baudrate = 115200,
+					parity = serial.PARITY_NONE,
+					stopbits = serial.STOPBITS_ONE,
+					bytesize = serial.EIGHTBITS,
+					timeout = 1 
+				)
+
+ser.flush()
+
+while not joy.connected():
+	pass
 
 
-while True:
-	ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0', 
-						baudrate = 115200,
-						parity = serial.PARITY_NONE,
-						stopbits = serial.STOPBITS_ONE,
-						bytesize = serial.EIGHTBITS
-					)
+while notConnected:
+	# Send calibrate signal to AUV.
+	if joy.Start() == 1:
+		print("Attempting to connect to AUV...")
+		ser.write('CAL\n')
+	
+		# Await response from AUV.
+		if ser.readline() == 'CAL\n':
+			notConnected = False	
+
+print("Connection Received")
+
+
+
+
+while False:
+
 	motorSpeedRight = 0
 	motorSpeedLeft = 0	
+	
 	if joy.rightBumper():
 		rightStickValue = math.floor(joy.rightX() * motorIncrements) / motorIncrements
 		motorSpeedRight = int(turnSpeed * (-rightStickValue))
@@ -47,21 +76,15 @@ while True:
 		motorSpeedRight *= -1
 		motorSpeedRight += 100
 
-	if motorSpeedLeft < 10:
-		motorSpeedLeft = "00" + str(motorSpeedLeft)
-	elif motorSpeedLeft < 100:
-		motorSpeedLeft = "0" + str(motorSpeedLeft)
-		
-	if motorSpeedRight < 10:
-		motorSpeedRight = "00" + str(motorSpeedRight)
-	elif motorSpeedRight < 100:
-		motorSpeedRight = "0" + str(motorSpeedRight)
-
-#	print("Base motor ", str(motorSpeedBase)); 
+	if motorSpeedBase < 0:
+		motorSpeedBase *= -1
+		motorSpeedBase += 100	
+	print("Base motor ", str(motorSpeedBase)); 
 	print("Left motor ", str(motorSpeedLeft));
 	print("Right motor ", str(motorSpeedRight)); 
  
-	speed_f = str(motorSpeedLeft) + str(motorSpeedRight)
+	ballast = 0
+	speed_f = chr(motorSpeedLeft) + chr(motorSpeedRight) + chr(motorSpeedBase) + chr(ballast) + '\n'
 	print("Speed f ", speed_f)
 	ser.write(speed_f)
 	time.sleep(0.05)

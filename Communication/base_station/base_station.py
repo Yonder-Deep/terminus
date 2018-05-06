@@ -104,6 +104,8 @@ class BaseStation:
  
             ballast = 0
             speed_f = chr(motorSpeedLeft) + chr(motorSpeedRight) + chr(motorSpeedBase) + chr(ballast) + '\n'
+            with open('data.txt', 'w') as f:
+                f.write(speed_f)
             print("Speed f ", speed_f)
             self.ser.write(speed_f)
             # Await response from AUV.
@@ -119,7 +121,7 @@ class BaseStation:
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
     bs = BaseStation()
-    #bs.calibrate_controller()
+    bs.calibrate_controller()
     bs.calibrate_communication()
     bs.run()
 

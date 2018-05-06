@@ -10,28 +10,31 @@ class App extends Component {
   }
   
   updateMotors = () =>{
-
-    axios.get('http://localhost:5000/getInfo', (data) => {
-
+	console.log("getting data")
+    setInterval(() => {
+    axios.get('http://localhost:5000/getInfo').then((d) => {
+      let data = d.data
       this.setState({m1:data[0], m2:data[1], m3:data[2], ballast:data[3]})
 
-    })
+    })},50)
   }
-  onComponentDidMount = () =>{
+  componentDidMount = () =>{
 
-    setInterval(this.updateMotors, 500)
+    this.updateMotors()
+
 
   }
 
   render() {
+    console.log('hey')
     return (
       <div className="App">
         <img id="logo-head" src={logo}></img>
         <h1 id="terminus">Terminus Command</h1>
         <div id="motor-stats">
-          <h1>Left: {this.state.m1}%</h1>
-          <h1>Right: {this.state.m2}%</h1>
-          <h1>Center: {this.state.m3}%</h1>
+          <h1>Left:{"     " + this.state.m1}%</h1>
+          <h1>Right:{"     " + this.state.m2}%</h1>
+          <h1>Center: {"     " + this.state.m3}%</h1>
         </div>
       </div>
     );

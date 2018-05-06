@@ -1,0 +1,61 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+#logo-head{
+  position: absolute;
+  left: 20px;
+  top:20px;
+  width:75px;
+  height: 75px;
+}
+#terminus{
+
+  position: absolute;
+  left: 100px;
+  top: 20px;
+}
+#motor-stats{
+  position: absolute;
+  left:calc(50% - 150px);
+  width: 300px;
+  height: 500px;
+  top:calc(50% - 250px);
+  justify-content: center;
+
+}
+@font-face{
+
+  font-family: 'SFPro';
+  src: url('./assets/SFPro.otf');
+
+}
+h1{
+
+  font-family: 'SFPro';
+
+
+}
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -146,7 +146,7 @@ def main():
     pi = pigpio.pi()
 
     # Instantiate motor controller
-    controller = MotorController(motor_pins=[LEFT_GPIO_PIN, RIGHT_GPIO_PIN], pi=pi)
+    controller = MotorController(motor_pins=[LEFT_GPIO_PIN, RIGHT_GPIO_PIN, CENTER_GPIO_PIN], pi=pi)
     
     # COMM CHECK
     controller.calibrate_communication()

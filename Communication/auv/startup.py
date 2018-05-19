@@ -7,12 +7,13 @@ CENTER_PWM_RANGE = 400
 CENTER_PWM_VALUE = 1500
 MAX_SPEED = 100
 
-LEFT_PIN =    4
-RIGHT_PIN =  14
+LEFT_GPIO_PIN =    4
+RIGHT_GPIO_PIN =  14
+CENTER_GPIO_PIN = 11
 
-LEFT_MOTOR =  0
-RIGHT_MOTOR = 1
-BACK_MOTOR =  2
+LEFT_MOTOR_INDEX =  0
+RIGHT_MOTOR_INDEX = 1
+CENTER_MOTOR_INDEX =  2
 BALLAST =     3
 
 class MotorController:
@@ -58,8 +59,9 @@ class MotorController:
                     print("Received data packet: " + str(data))
             
                     # Update motor values.
-                    self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR])
-                    self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR])
+                    self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR_INDEX])
+                    self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR_INDEX])
+                    self.motors[CENTER_MOTOR].set_speed(data[CENTER_MOTOR_INDEX])
         except:
             # Close serial conenction with local radio that is disconnected.
             self.radio.close()
@@ -144,7 +146,7 @@ def main():
     pi = pigpio.pi()
 
     # Instantiate motor controller
-    controller = MotorController(motor_pins=[LEFT_PIN, RIGHT_PIN], pi=pi)
+    controller = MotorController(motor_pins=[LEFT_GPIO_PIN, RIGHT_GPIO_PIN], pi=pi)
     
     # COMM CHECK
     controller.calibrate_communication()

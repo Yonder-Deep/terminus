@@ -1,9 +1,18 @@
+'''
+This class manages the serial connection between the 
+AUV and Base Station along with sending controller 
+commands.
+'''
+
+
 import serial
 import time
 import struct
 import xbox
 import math
 import os
+import argparse
+from nav import NavController
 
 speed = 0
 delay = 0.1
@@ -12,10 +21,16 @@ minSpeed = 0
 turnSpeed = 50
 motorIncrements = 8
 maxSpeed = 100
-esc_connected = False
 
 class BaseStation:
-    def __init__(self):
+    def __init__(self, debug=False):
+
+        '''
+        Initialize Serial Port and Class Variables
+
+        debug: debugging flag
+        '''
+
         global speed_f
         self.joy = None
         self.ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0', 
@@ -26,13 +41,23 @@ class BaseStation:
                                     timeout = 5 
                                 )
         self.connected_to_auv = False
+        self.navController = None
+        self.debug = debug
+        self.esc_connected = False
 
     def calibrate_controller(self):
+        '''
+        Instantiates a new Xbox Controller Instance and NavigationController
+        '''
+
         # Remove the xpad module that interferes with xboxdrv.
         #os.system('sudo rmmod xpad 2> /dev/null')
 
         # Construct joystick and check that the driver/controller are working.
         self.joy = xbox.Joystick()
+
+        #Instantiate New NavController With Joystick
+        self.navController = NavController(self.joy, self.debug)
 
         # Check that the xbox controller is connected.
         print("Press the back button to calibrate the controller...")
@@ -40,8 +65,16 @@ class BaseStation:
             pass
         print("Controller calibrated.\n")
         
+        self.calibrate_communication()
+
+       
     def calibrate_communication(self):
+        '''
+        Ensure communication between AUV and Base Station
+        '''
+        
         esc_connected = False
+        
         # Flush the serial connection.
         self.ser.flush()
 
@@ -49,9 +82,13 @@ class BaseStation:
 
         # Wait until connection is established.
         while not self.connected_to_auv:
-            # Send calibrate signal to AUV.
+            
+            # Send calibrate signal on start press.
             if self.joy.Start() == 1:
+                
                 print("Attempting to connect to AUV...")
+                
+                #Send Calibration Signal To AUV
                 self.ser.write('CAL\n')
 				
                 # Await response from AUV. Times out after 1 second.
@@ -61,68 +98,61 @@ class BaseStation:
 
         print("Connection established with AUV.")
 
+
+ 
     def run(self):
-        global esc_connected
+        ''' 
+        Runs the controller loop for the AUV.
+        '''
+
+        #Check ESC Connection Status 
         data = self.ser.readline()
         while data != "ESC\n":
             data = self.ser.readline()
-        esc_connected = True
         
-        while esc_connected:
-            motorSpeedRight = 0
-            motorSpeedLeft = 0	
-	
-            if self.joy.rightBumper():
-                rightStickValue = math.floor(self.joy.rightX() * motorIncrements) / motorIncrements
-                motorSpeedRight = int(turnSpeed * (-rightStickValue))
-                motorSpeedLeft = int(turnSpeed * rightStickValue)
-                motorSpeedBase = 0
-            else:
-                if self.joy.rightTrigger() > 0:
-			        motorSpeedBase = int(self.joy.rightTrigger()*maxSpeed)
-                else:
-                    motorSpeedBase = int(-1*self.joy.leftTrigger() * maxSpeed)
+        self.esc_connected = True
+        
+        #Start Control Loop
+        while self.esc_connected:
+            
+            #Get packet
+            speed_f = self.navController.getPacket()
+            
+            if self.debug:
+                with open('data.txt', 'w') as f:
+                    f.write(speed_f)
 
-                leftStickValue = math.floor( ( (self.joy.leftX() + 1 ) / 2) * motorIncrements) / motorIncrements
-                motorSpeedLeft = int(leftStickValue * motorSpeedBase)
-                motorSpeedRight = int((1 - leftStickValue) * motorSpeedBase) 
-	
-            if motorSpeedLeft < 0:
-                motorSpeedLeft *= -1
-                motorSpeedLeft += 100
-		
-            if  motorSpeedRight < 0:
-                motorSpeedRight *= -1
-                motorSpeedRight += 100
-
-            if motorSpeedBase < 0:
-                motorSpeedBase *= -1
-                motorSpeedBase += 100	
-            print("Base motor ", str(motorSpeedBase)); 
-            print("Left motor ", str(motorSpeedLeft));
-            print("Right motor ", str(motorSpeedRight)); 
- 
-            ballast = 0
-            speed_f = chr(motorSpeedLeft) + chr(motorSpeedRight) + chr(motorSpeedBase) + chr(ballast) + '\n'
-            with open('data.txt', 'w') as f:
-                f.write(speed_f)
             print("Speed f ", speed_f)
+            
             self.ser.write(speed_f)
+            
             # Await response from AUV.
             if self.ser.readline() != 'REC\n':
+            
                 self.connected_to_auv = False
+            
                 print("WARNING - AUV disconnected")
+            
                 self.calibrate_communication()
+            
                 data = self.ser.readline()
+                
                 while data != "ESC\n":
                     data = self.ser.readline()
+            
             time.sleep(0.05)
 
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
-    bs = BaseStation()
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--debug', action='store_true')
+
+    args = parser.parse_args()
+
+    bs = BaseStation(debug=args.debug)
     bs.calibrate_controller()
-    bs.calibrate_communication()
     bs.run()
 
 

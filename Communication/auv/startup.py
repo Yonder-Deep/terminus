@@ -1,11 +1,9 @@
 import os
-import time
-import pigpio 
+import pigpio
 import serial
+from components.motor import Motor
 
-CENTER_PWM_RANGE = 400
-CENTER_PWM_VALUE = 1500
-MAX_SPEED = 100
+
 
 LEFT_GPIO_PIN =    4
 RIGHT_GPIO_PIN =  14
@@ -25,11 +23,11 @@ class MotorController:
         pi:         Raspberry Pi GPIO object
         """
         # Connection to onboard radio.
-        self.radio = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0', 
+        self.radio = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0',
                                     baudrate = 115200,
                                     parity = serial.PARITY_NONE,
                                     stopbits = serial.STOPBITS_ONE,
-                                    bytesize = serial.EIGHTBITS, 
+                                    bytesize = serial.EIGHTBITS,
                                     timeout = 5
                                     )
 
@@ -48,16 +46,16 @@ class MotorController:
                     self.calibrate_communication()
                     self.radio.write('ESC\n')
                     continue
-           
+
                 # Indicate that some data has been received.
                 self.radio.write('REC\n')
-            
+
                 # Check for packet loss - skip if packet is invalid.
                 if len(data) == 5:
                     # Parse data - remove newline.
                     data = data[:-1]
                     print("Received data packet: " + str(data))
-            
+
                     # Update motor values.
                     self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR_INDEX])
                     self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR_INDEX])
@@ -90,56 +88,22 @@ class MotorController:
         # Indicate that ESCs have been calibrated.
         self.radio.write('ESC\n')
 
-        print('Finished calibrating ESC') 
+        print('Finished calibrating ESC')
 
     def calibrate_communication(self):
         self.radio.flush()
 
         # Wait until signal received from base station.
         print("Waiting For Data:")
-        
+
         data = self.radio.readline()
         while data != 'CAL\n':
             data = self.radio.readline()
-       
+
         # Send signal to base station.
         self.radio.write('CAL\n')
 
         print("Done calibrating AUV.")
-
-class Motor:
-    def __init__(self, gpio_pin, pi):
-        """
-        Instantiate a motor.
-
-        gpio_pin: Pin on Raspberry Pi that this motor is connected to.i
-        pi:         Raspberry Pi GPIO object
-        """
-        self.pin = gpio_pin
-        self.pi  = pi
-
-    def set_speed(self, speed):    
-        # Threshold for positive or negative speed.
-        if speed > MAX_SPEED:
-            speed -= MAX_SPEED
-            speed *= -1
-
-        # Conversion from received radio speed to PWM value. 
-        pwm_speed = speed * (CENTER_PWM_RANGE) / MAX_SPEED + CENTER_PWM_VALUE
-
-        # Change speed of motor.
-        self.pi.set_servo_pulsewidth(self.pin, pwm_speed)
-
-    def calibrate_motor(self):
-        self.set_speed(0)
-        time.sleep(2)
-        self.set_speed(MAX_SPEED / 2)
-        time.sleep(2)
-        self.set_speed(0)
-        time.sleep (2)
-        self.set_speed(0)
-        time.sleep(2)
-
 
 def main():
     # Connection to Raspberry Pi GPIO ports.
@@ -147,7 +111,7 @@ def main():
 
     # Instantiate motor controller
     controller = MotorController(motor_pins=[LEFT_GPIO_PIN, RIGHT_GPIO_PIN, CENTER_GPIO_PIN], pi=pi)
-    
+
     # COMM CHECK
     controller.calibrate_communication()
     controller.calibrate_motors()
@@ -156,5 +120,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

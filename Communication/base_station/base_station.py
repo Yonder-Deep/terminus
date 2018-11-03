@@ -32,12 +32,12 @@ class BaseStation:
 
         global speed_f
         self.joy = None
-        self.ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0', 
+        self.ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0',
                                     baudrate = 115200,
                                     parity = serial.PARITY_NONE,
                                     stopbits = serial.STOPBITS_ONE,
                                     bytesize = serial.EIGHTBITS,
-                                    timeout = 5 
+                                    timeout = 5
                                 )
         self.connected_to_auv = False
         self.navController = None
@@ -66,7 +66,6 @@ class BaseStation:
         
         self.calibrate_communication()
 
-       
     def calibrate_communication(self):
         '''
         Ensure communication between AUV and Base Station
@@ -89,7 +88,7 @@ class BaseStation:
                 
                 #Send Calibration Signal To AUV
                 self.ser.write('CAL\n')
-				
+
                 # Await response from AUV. Times out after 1 second.
                 self.connected_to_auv = (self.ser.readline() == 'CAL\n')
                 if not self.connected_to_auv:
@@ -151,10 +150,11 @@ def main():
     args = parser.parse_args()
 
     bs = BaseStation(debug=args.debug)
+    
     bs.calibrate_controller()
+    
     bs.run()
 
 
 if __name__ == '__main__':
     main()
-

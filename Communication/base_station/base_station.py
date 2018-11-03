@@ -15,11 +15,11 @@ sys.path.append(components_path)
 import serial
 import time
 import struct
-import xbox
 import math
-import os
 import argparse
 from nav import NavController
+from nav import xbox
+
 
 speed = 0
 delay = 0.1

@@ -2,6 +2,15 @@
 The auv class orchestrates all of the sensors and motors onboard the auv and
 communicates with the base station class.
 """
+import sys
+import os
+
+# Sets the PYTHONPATH to include the components.
+split_path = os.path.abspath(__file__).split('/')
+split_path = split_path[0:len(split_path) - 2]
+components_path = "/".join(split_path) + "/components"
+sys.path.append(components_path)
+
 from components.motor_controller import MotorController
 from components.radio import Radio
 

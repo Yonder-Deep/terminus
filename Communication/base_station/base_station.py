@@ -11,7 +11,7 @@ import xbox
 import math
 import os
 import argparse
-from nav import NavController
+from components.nav import NavController
 
 speed = 0
 delay = 0.1

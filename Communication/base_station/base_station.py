@@ -3,15 +3,23 @@ This class manages the serial connection between the
 AUV and Base Station along with sending controller 
 commands.
 '''
+import sys
+import os
+
+# Sets the PYTHONPATH to include the components.
+split_path = os.path.abspath(__file__).split('/')
+split_path = split_path[0:len(split_path) - 2]
+components_path = "/".join(split_path) + "/components"
+sys.path.append(components_path)
 
 import serial
 import time
 import struct
-import xbox
 import math
-import os
 import argparse
-from components.nav import NavController
+from nav import NavController
+from nav import xbox
+
 
 speed = 0
 delay = 0.1

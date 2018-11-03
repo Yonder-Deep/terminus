@@ -4,7 +4,6 @@ AUV and Base Station along with sending controller
 commands.
 '''
 
-
 import serial
 import time
 import struct

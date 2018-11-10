@@ -38,41 +38,16 @@ class BaseStation:
         debug: debugging flag
         '''
 	self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
-	self.speed_f = 0       
- 	self.joy = None 	
         self.connected_to_auv = False
         self.navController = None
         self.debug = debug
-        self.esc_connected = False
-
-    def calibrate_controller(self):
-        '''
-        Instantiates a new Xbox Controller Instance and NavigationController
-        '''
-
-        # Remove the xpad module that interferes with xboxdrv.
-        #os.system('sudo rmmod xpad 2> /dev/null')
-
-        # Construct joystick and check that the driver/controller are working.
-        self.joy = xbox.Joystick()
-
-        #Instantiate New NavController With Joystick
-        self.navController = NavController(self.joy, self.debug)
-
-        # Check that the xbox controller is connected.
-        print("Press the back button to calibrate the controller...")
-        while not self.joy.Back():
-            pass
-        print("Controller calibrated.\n")
-        
         self.calibrate_communication()
-
+        self.buffsize = 100
     def calibrate_communication(self):
         '''
         Ensure communication between AUV and Base Station
         '''
         
-        esc_connected = False
         
         # Flush the serial connection.
         self.radio.flush()
@@ -104,42 +79,31 @@ class BaseStation:
         Runs the controller loop for the AUV.
         '''
 
-        #Check ESC Connection Status 
-        data = self.radio.readline()
-        while data != "ESC\n":
-            data = self.radio.readline()
-        
-        self.esc_connected = True
         
         #Start Control Loop
-        while self.esc_connected:
-            
-            #Get packet
-            self.speed_f = self.navController.getPacket()
-            
-            if self.debug:
-                with open('data.txt', 'w') as f:
-                    f.write(self.speed_f)
+        while True:
 
-            print("Speed f ", self.speed_f)
+            # Send the sequence of bits to the AUV.
+            for i in range(1, self.buffsize + 1):
+                packet = chr(i) + '\n'
+                self.radio.write(packet)
+ 
+	        time.sleep(0.05)
+
+            # Waiting for num packets received by AUV.
+            count = self.radio.readline()
+            while len(count) == 0:
+                self.radio.write('END\n')
             
-           self. radio.write(self.speed_f)
+            # Calculate the packet loss for the last sequence of bits sent.
+            ratio = count / buffsize
+            print(ratio)
+
+            # Indicate to the AUV to clear its counter.
+            while self.radio.readline() != 'CLD\n':
+                self.radio.write('CLR\n')
+           
             
-            # Await response from AUV.
-            if self.radio.readline() != 'REC\n':
-            
-                self.connected_to_auv = False
-            
-                print("WARNING - AUV disconnected")
-            
-                self.calibrate_communication()
-            
-                data = self.radio.readline()
-                
-                while data != "ESC\n":
-                    data = self.radio.readline()
-            
-            time.sleep(0.05)
 
 # TODO: Comment run, find out when auv disconnects.
 def main(): 

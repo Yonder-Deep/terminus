@@ -13,8 +13,8 @@ class NavController:
 		self.turnSpeed = 50
 		self.motorIncrements = 8
 		self.maxSpeed = 100
-	
-	def getPacket():
+		self.debug = debug	
+	def getPacket(self):
 
 		motorSpeedRight = 0
 		motorSpeedLeft = 0	
@@ -45,7 +45,7 @@ class NavController:
 		if motorSpeedBase < 0:
 				motorSpeedBase *= -1
 				motorSpeedBase += 100	
-		if debug:
+		if self.debug:
 			print("Base motor ", str(motorSpeedBase)); 
 			print("Left motor ", str(motorSpeedLeft));
 			print("Right motor ", str(motorSpeedRight)); 

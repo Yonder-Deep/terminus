@@ -37,16 +37,9 @@ class BaseStation:
 
         debug: debugging flag
         '''
-
-        global speed_f
-        self.joy = None
-        self.ser = serial.Serial('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0',
-                                    baudrate = 115200,
-                                    parity = serial.PARITY_NONE,
-                                    stopbits = serial.STOPBITS_ONE,
-                                    bytesize = serial.EIGHTBITS,
-                                    timeout = 5
-                                )
+	self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
+	self.speed_f = 0       
+ 	self.joy = None 	
         self.connected_to_auv = False
         self.navController = None
         self.debug = debug
@@ -82,7 +75,7 @@ class BaseStation:
         esc_connected = False
         
         # Flush the serial connection.
-        self.ser.flush()
+        self.radio.flush()
 
         print("Press the start button to establish connection to AUV...")
 
@@ -95,7 +88,7 @@ class BaseStation:
                 print("Attempting to connect to AUV...")
                 
                 #Send Calibration Signal To AUV
-                self.ser.write('CAL\n')
+                self.radio.write('CAL\n')
 
                 # Await response from AUV. Times out after 1 second.
                 self.connected_to_auv = (self.ser.readline() == 'CAL\n')
@@ -112,9 +105,9 @@ class BaseStation:
         '''
 
         #Check ESC Connection Status 
-        data = self.ser.readline()
+        data = self.radio.readline()
         while data != "ESC\n":
-            data = self.ser.readline()
+            data = self.radio.readline()
         
         self.esc_connected = True
         
@@ -122,18 +115,18 @@ class BaseStation:
         while self.esc_connected:
             
             #Get packet
-            speed_f = self.navController.getPacket()
+            self.speed_f = self.navController.getPacket()
             
             if self.debug:
                 with open('data.txt', 'w') as f:
-                    f.write(speed_f)
+                    f.write(self.speed_f)
 
-            print("Speed f ", speed_f)
+            print("Speed f ", self.speed_f)
             
-            self.ser.write(speed_f)
+           self. radio.write(self.speed_f)
             
             # Await response from AUV.
-            if self.ser.readline() != 'REC\n':
+            if self.radio.readline() != 'REC\n':
             
                 self.connected_to_auv = False
             
@@ -141,10 +134,10 @@ class BaseStation:
             
                 self.calibrate_communication()
             
-                data = self.ser.readline()
+                data = self.radio.readline()
                 
                 while data != "ESC\n":
-                    data = self.ser.readline()
+                    data = self.radio.readline()
             
             time.sleep(0.05)
 

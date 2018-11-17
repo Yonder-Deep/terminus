@@ -24,6 +24,7 @@ class MotorController:
 
         # Motor object definitions.
         self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN, CENTER_GPIO_PIN]
+
         self.motors = [Motor(gpio_pin=pin, pi=self.pi) for pin in self.motor_pins]
 
     def update_motor_speeds(self, data):
@@ -32,9 +33,11 @@ class MotorController:
 
         data: String read from the serial connection containing motor speed values.
         """
-        self.motors[LEFT_MOTOR].set_speed(data[LEFT_MOTOR_INDEX])
-        self.motors[RIGHT_MOTOR].set_speed(data[RIGHT_MOTOR_INDEX])
-        self.motors[CENTER_MOTOR].set_speed(data[CENTER_MOTOR_INDEX])
+        self.motors[LEFT_MOTOR_INDEX].set_speed(data[LEFT_MOTOR_INDEX])
+        
+        self.motors[RIGHT_MOTOR_INDEX].set_speed(data[RIGHT_MOTOR_INDEX])
+        
+        self.motors[CENTER_MOTOR_INDEX].set_speed(data[CENTER_MOTOR_INDEX])
 
     def zero_out_motors(self):
         """

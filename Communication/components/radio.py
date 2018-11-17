@@ -4,15 +4,15 @@ The radio class enables communication over wireless serial radios.
 import serial
 
 class Radio:
-    def __init__(self, serial):
+    def __init__(self, serial_path):
         """
         Initializes the radio object.
 
-        serial: Absolute path to serial port for specified device.
+        serial_path: Absolute path to serial port for specified device.
         """
 
         # Establish connection to the serial radio.
-        self.ser = serial.Serial(serial,
+        self.ser = serial.Serial(serial_path,
                                 baudrate = 115200, parity = serial.PARITY_NONE,
                                 stopbits = serial.STOPBITS_ONE, bytesize = serial.EIGHTBITS,
                                 timeout = 5

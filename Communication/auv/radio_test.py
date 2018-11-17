@@ -11,8 +11,8 @@ split_path = split_path[0:len(split_path) - 2]
 components_path = "/".join(split_path) + "/components"
 sys.path.append(components_path)
 
-from components.motor_controller import MotorController
-from components.radio import Radio
+from motor_controller import MotorController
+from radio import Radio
 
 # This serial code is sent when radio needs to reconnected to base station.
 ESC = 'ESC\n'
@@ -39,7 +39,10 @@ class RadioTest:
             while self.is_radio_connected_locally():
                 # Indicates that all packets were sent and we should send
                 # back to base station how many we recieved.
+                data = self.radio.readline()
+                print(data) 
                 if data == 'END\n':
+                    print('Iteration Ended')
                     self.radio.write(str(count) + '\n')
                 
                 # Indicates that our counter should be reset and lets base
@@ -53,13 +56,14 @@ class RadioTest:
                 elif len(data):
                     count += 1
 
-        except:
+        except Exception, e:
             # Close serial conenction with local radio that is disconnected.
             self.radio.close()
 
             # Zero out motors.
-            self.mc.zero_out_motors()
+            #self.mc.zero_out_motors()
 
+            print(e)
             print('Radio disconnected')
             exit(1)
 

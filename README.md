@@ -3,10 +3,24 @@ Codebase for the Terminus Autonomous Underwater Vehicle. Developed by [Yonder De
 
 
 ## Installation
-
+Run these from the top level directory:
 Linux/Mac
 ```sh
-$ ./install.sh
+pip install virtualenv
+virtualenv env
+source env/bin/activate
+pip install -r requirements.txt
+```
+
+## Regular Environment Setup
+To enter the virtual environment:
+```sh
+source env/bin/activate
+```
+
+To exit the env:
+```sh
+deactivate
 ```
 
 For installation on windows and pinouts, wiring, and tutorials refer to [this](https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor/arduino-code) guide on the Adafruit BNO055 sensor.

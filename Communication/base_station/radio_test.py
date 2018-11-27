@@ -29,24 +29,33 @@ motorIncrements = 8
 maxSpeed = 100
 
 class BaseStation:
-    def __init__(self, debug=False):
+    def __init__(self, args, debug=False):
 
         '''
         Initialize Serial Port and Class Variables
-
+        args: Command line arguments.
         debug: debugging flag
         '''
         self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
         self.connected_to_auv = False
         self.navController = None
         self.debug = debug
-        self.calibrate_communication()
+        
+        # Number of data points to send per test iteration.
         self.buffsize = 100
+
+        # Delay amount
+        self.delay = 0.005
+        
+        # Define file to write to if it exists.
+        self.file = None
+        if args.out:
+            self.file = open(args.out, "w")
+
     def calibrate_communication(self):
         '''
         Ensure communication between AUV and Base Station
-        '''
-        
+        ''' 
         
         # Flush the serial connection.
         self.radio.flush()
@@ -79,26 +88,34 @@ class BaseStation:
         while True:
 
             # Send the sequence of bits to the AUV.
-            for i in range(1, self.buffsize + 1):
+            for i in range(ord('a'), ord('a') + self.buffsize):
                 packet = chr(i) + '\n'
                 self.radio.write(packet)
  
-                time.sleep(0.05)
+                time.sleep(self.delay)
 
             # Waiting for num packets received by AUV.
             count = self.radio.readline()
             while len(count) == 0:
                 self.radio.write('END\n')
+                count = self.radio.readline()
+                time.sleep(self.delay)
             
             # Calculate the packet loss for the last sequence of bits sent.
-            ratio = count / buffsize
+            ratio = float(count) / self.buffsize
             time_elapsed = time.time() - self.start_time
-            print("Time elapsed: {} Packet Health: {}".format(time_elapsed, ratio))
+            
+            # Log to the outfile.
+            if self.file:
+                self.file.write("{} {}\n".format(time_elapsed, ratio))
+            
+            if self.debug:
+                print("Time elapsed: {} Packet Health: {}\n".format(time_elapsed, ratio))
 
             # Indicate to the AUV to clear its counter.
             while self.radio.readline() != 'CLD\n':
                 self.radio.write('CLR\n')
-           
+                time.sleep(self.delay)
             
 
 # TODO: Comment run, find out when auv disconnects.
@@ -110,10 +127,9 @@ def main():
     parser.add_argument('--out', required=False, help='File to output logged results to.')
 
     args = parser.parse_args()
-
-    bs = BaseStation(debug=args.debug)
+    bs = BaseStation(args, debug=args.debug)
     
-    bs.calibrate_controller()
+    bs.calibrate_communication()
     
     bs.run()
 

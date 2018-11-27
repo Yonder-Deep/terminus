@@ -102,9 +102,8 @@ class AUV:
             # Zero out motors.
             self.horizontal_mc.zero_out_motors()
 
-            print('Radio disconnected')
+            print('Radio disconnected attempting to recalibrate.')
             
-            exit(1)
 
     def is_radio_connected_locally(self):
         """
@@ -169,10 +168,20 @@ def main():
     # Instantiate motor controller
     auv = AUV()
 
-    # COMM CHECK
-    auv.calibrate_communication()
-    auv.calibrate_motors()
-    auv.run()
+    motors_calibrated = False
+    
+    # AUV Run Life Cycle.
+    while True:
+        # Comm calibration.
+        auv.calibrate_communication()
+
+        # Calibrate the motors the when the AUV is turned on.
+        if not motors_calibrated:
+            auv.calibrate_motors()
+            motors_calibrated = True
+        
+        # Start connection with Base Station.
+        auv.run()
 
 
 if __name__ == '__main__':

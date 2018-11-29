@@ -115,7 +115,7 @@ class BaseStation:
         while self.esc_connected:
             
             #Get packet
-            self.speed_f = self.navController.getPacket()
+            self.speed_f = self.navController.get_packet()
             
             if self.debug:
                 with open('data.txt', 'w') as f:
@@ -123,7 +123,7 @@ class BaseStation:
 
             print("Speed f ", self.speed_f)
             
-           self. radio.write(self.speed_f)
+           self.radio.write(self.speed_f)
             
             # Await response from AUV.
             if self.radio.readline() != 'REC\n':
@@ -140,6 +140,7 @@ class BaseStation:
                     data = self.radio.readline()
             
             time.sleep(0.05)
+
 
 # TODO: Comment run, find out when auv disconnects.
 def main(): 

@@ -13,6 +13,7 @@ sys.path.append(components_path)
 
 from motor_controller import MotorController
 from radio import Radio
+from ballast_controller import BallastController
 
 # This serial code is sent when radio needs to reconnected to base station.
 ESC = 'ESC\n'
@@ -22,16 +23,35 @@ REC = 'REC\n'
 # and is sent after communication has been established.
 CAL = 'CAL\n'
 
+BALLAST_INDEX = 2
+
+# Motor Pins
+LEFT_GPIO_PIN  =  4
+RIGHT_GPIO_PIN = 14
+FRONT_GPIO_PIN = -1
+BACK_GPIO_PIN  = -1
+
+horizontal_motor_config = {
+    'left': LEFT_GPIO_PIN,
+    'right': RIGHT_GPIO_PIN
+}
+
+vertical_motor_config = {
+    'front': FRONT_GPIO_PIN,
+    'back': BACK_GPIO_PIN
+}
+
+
 class AUV:
     def __init__(self):
         """
         Instantiate the AUV object
         """
-        self.mc = MotorController()
+        self.horizontal_mc = MotorController(horizontal_motor_config)
+        self.vertical_mc = MotorController(vertical_motor_config)
+        self.bc = BallastController(self.horizontal_mc, self.vertical_mc)
         # Connection to onboard radio.
         self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0')
-
-
 
     def run(self):
         """
@@ -48,7 +68,8 @@ class AUV:
 
                 # Check for timeout.
                 if len(data) == 0:
-                    self.zero_out_motors()
+                    self.horizontal_mc.zero_out_motors()
+                    self.vertical_mc.zero_out_motors()
                     self.calibrate_communication()
                     self.radio.write(ESC)
                     continue
@@ -59,20 +80,27 @@ class AUV:
                 # Check for packet loss - skip if packet is invalid.
                 print(len(data))
                 
-                if len(data) == 5:
+                if len(data) == 4:
                     # Parse data - remove newline.
                     data = data[:-1]
 
-                    # Update motor values.
+                    if data[BALLAST_INDEX] == 1:
+                        self.bc.start()
+                        self.radio.flush()
 
-                    self.mc.update_motor_speeds(data)
+                        #TODO
+                        #SEND BALLAST FINISHED BIT TO BASE STATION
+
+                    else:
+                        # Update motor values.
+                        self.horizontal_mc.update_motor_speeds(self.get_horizontal_speed(data))
 
         except Exception, e:
             # Close serial conenction with local radio that is disconnected.
             self.radio.close()
 
             # Zero out motors.
-            self.mc.zero_out_motors()
+            self.horizontal_mc.zero_out_motors()
 
             print('Radio disconnected')
             
@@ -95,7 +123,8 @@ class AUV:
         Calibrates all of the motors and writes ESC code if calibrated to base station.
         """
         print('Calibrating ESC...')
-        self.mc.calibrate_motors();
+        self.horizontal_mc.calibrate_motors()
+        self.vertical_mc.calibrate_motors()
 
         # Indicate that ESCs have been calibrated.
         self.radio.write(ESC)
@@ -121,6 +150,21 @@ class AUV:
 
         print("Done calibrating AUV.")
 
+
+    def get_horizontal_speed(self, data):
+        """
+        Converts data from array format to dict format so that MotorController can access it
+        """
+        speed = {
+            'left': data[0],
+            'right': data[1]
+        }
+
+        return speed
+
+
+
+
 def main():
     # Instantiate motor controller
     auv = AUV()
@@ -133,3 +177,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

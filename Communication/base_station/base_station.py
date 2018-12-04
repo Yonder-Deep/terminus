@@ -18,8 +18,8 @@ import struct
 import math
 import argparse
 from nav import NavController
-from nav import xbox
-
+import xbox
+from radio import Radio
 
 speed = 0
 delay = 0.1
@@ -37,9 +37,9 @@ class BaseStation:
 
         debug: debugging flag
         '''
-	self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
-	self.speed_f = 0       
- 	self.joy = None 	
+        self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
+        self.speed_f = 0       
+        self.joy = None 	
         self.connected_to_auv = False
         self.navController = None
         self.debug = debug
@@ -91,9 +91,9 @@ class BaseStation:
                 self.radio.write('CAL\n')
 
                 # Await response from AUV. Times out after 1 second.
-                self.connected_to_auv = (self.ser.readline() == 'CAL\n')
+                self.connected_to_auv = (self.radio.readline() == 'CAL\n')
                 if not self.connected_to_auv:
-                    print("Connection timed out, please try again...\n")
+                    print("Connection timed out, Press Start to Try Again...\n")
 
         print("Connection established with AUV.")
 
@@ -123,7 +123,7 @@ class BaseStation:
 
             print("Speed f ", self.speed_f)
             
-           self.radio.write(self.speed_f)
+            self.radio.write(self.speed_f)
             
             # Await response from AUV.
             if self.radio.readline() != 'REC\n':

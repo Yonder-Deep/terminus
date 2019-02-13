@@ -1,4 +1,4 @@
 #!/bin/bash
-
+sudo killall pigpiod
 sudo pigpiod
-sudo python /home/pi/terminus/Communication/auv/startup.py 
+sudo python /home/pi/dev/terminus/Communication/auv/auv.py 

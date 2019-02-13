@@ -37,9 +37,9 @@ class BaseStation:
 
         debug: debugging flag
         '''
-	self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
-	self.speed_f = 0       
- 	self.joy = None 	
+        self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
+        self.speed_f = 0       
+        self.joy = None 	
         self.connected_to_auv = False
         self.navController = None
         self.debug = debug
@@ -123,7 +123,7 @@ class BaseStation:
 
             print("Speed f ", self.speed_f)
             
-           self. radio.write(self.speed_f)
+            self.radio.write(self.speed_f)
             
             # Await response from AUV.
             if self.radio.readline() != 'REC\n':

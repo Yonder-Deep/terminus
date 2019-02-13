@@ -47,6 +47,13 @@ while True:
                 sensor.pressure(ms5837.UNITS_psi), # Request psi
                 sensor.temperature(), # Default is degrees C (no arguments)
                 sensor.temperature(ms5837.UNITS_Farenheit)) # Request Farenheit
+                freshwaterDepth = sensor.depth() # default is freshwater
+                sensor.setFluidDensity(ms5837.DENSITY_SALTWATER)
+                saltwaterDepth = sensor.depth() # No nead to read() again
+                sensor.setFluidDensity(1000) # kg/m^3
+                print("Depth: %.3f m (freshwater)  %.3f m (saltwater)") % (freshwaterDepth, saltwaterDepth)
+
+        
         else:
                 print "Sensor read failed!"
                 exit(1)

@@ -19,7 +19,7 @@ import math
 import argparse
 from nav import NavController
 from nav import xbox
-
+from radio import Radio
 
 speed = 0
 delay = 0.1
@@ -28,6 +28,7 @@ minSpeed = 0
 turnSpeed = 50
 motorIncrements = 8
 maxSpeed = 100
+speed_callibration = 10
 
 class BaseStation:
     def __init__(self, debug=False):
@@ -90,10 +91,15 @@ class BaseStation:
                 #Send Calibration Signal To AUV
                 self.radio.write('CAL\n')
 
+                #print(self.radio.readline())
+
                 # Await response from AUV. Times out after 1 second.
-                self.connected_to_auv = (self.ser.readline() == 'CAL\n')
+                self.connected_to_auv = (self.radio.readline() == 'CAL\n')
                 if not self.connected_to_auv:
+                    print("self.radio.readline(): ", self.radio.readline())
+                    print("self.connected_to_auv: ", self.connected_to_auv)
                     print("Connection timed out, please try again...\n")
+		self.radio.flush()
 
         print("Connection established with AUV.")
 
@@ -112,18 +118,27 @@ class BaseStation:
         self.esc_connected = True
         
         #Start Control Loop
+	i = 1
+	self.radio.write(chr(speed_callibration))
         while self.esc_connected:
-            
+            print("counter: ", i)
             #Get packet
             self.speed_f = self.navController.getPacket()
-            
-            if self.debug:
+   
+	    if self.debug:
                 with open('data.txt', 'w') as f:
                     f.write(self.speed_f)
 
             print("Speed f ", self.speed_f)
             
+
             self.radio.write(self.speed_f)
+ 	    print("self.speed_f[3] is: ", self.speed_f[3])
+	    if ord(self.speed_f[3]) == 1:
+		print("entering ballast state")
+		self.enter_ballast_state() 
+		print("Finished ballasting")
+		self.radio.write(chr(speed_callibration))
             
             # Await response from AUV.
             if self.radio.readline() != 'REC\n':
@@ -139,8 +154,16 @@ class BaseStation:
                 while data != "ESC\n":
                     data = self.radio.readline()
             
-            time.sleep(0.05)
+            time.sleep(0.08)
 
+    def enter_ballast_state(self): 
+		reconnected_after_ballasting = False
+		while not reconnected_after_ballasting:
+			data = self.radio.readline()
+			if data == "DONE\n":
+				print("data recieved is done, exiting ballasting")
+				reconnected_after_ballasting = True
+		return
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
 

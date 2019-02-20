@@ -33,7 +33,7 @@ REC = 'REC\n'
 CAL = 'CAL\n'
 
 BALLAST_INDEX = 3
-MISSION_DEPTH = .18 # In meters
+MISSION_DEPTH = .35 # In meters
 FEET_TO_METER = 3.28024
 
 class AUV:
@@ -44,9 +44,12 @@ class AUV:
         self.mc = MotorController()
         # Connection to onboard radio.
         try:
-            self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0')
+            # Jack Silberman's radio
+            #self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN038PQU-if00-port0')
+            # Yonder's radio
+            self.radio = Radio('/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0')
         except Exception, e:
-            print("Radio not found")
+            print("Radio not found. Exception is: ", e)
             print("Exiting")
             exit(1)
 
@@ -70,7 +73,7 @@ class AUV:
                 # Check for timeout.
                 if len(data) == 0:
                     print("len(data) == 0")
-                    self.zero_out_motors()
+                    self.mc.zero_out_motors()
                     self.calibrate_communication()
                     self.radio.write(ESC)
                     continue
@@ -204,8 +207,12 @@ class AUV:
         print("Current depth is ", self.convert_to_feet(self.depth), "(feet)")
     
     def calibrate_imu_sensor(self):
-        if not self.imu_sensor.begin():
-            raise RuntimeError('Failed to initialize imu sensor! Is the sensor connected?')
+        sensor_connected = self.imu_sensor.begin()
+        while not sensor_connected:
+            print("Failed to initialize imu sensor. Trying again")
+            sensor_connected = self.imu_sensor.begin()
+            continue;
+        
         status, self_test, error = self.imu_sensor.get_system_status()
         if status == 0x01:
             print('System error: {0}'.format(error))

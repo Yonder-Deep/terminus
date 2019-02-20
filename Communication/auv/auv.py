@@ -21,6 +21,7 @@ sys.path.append(imu_sensor_path)
 
 from motor_controller import MotorController
 from radio import Radio
+from pid import PID
 import ms5837, BNO055
 
 
@@ -36,6 +37,10 @@ BALLAST_INDEX = 3
 MISSION_DEPTH = .35 # In meters
 FEET_TO_METER = 3.28024
 
+TOLERANCE = 20
+P = 0
+I = 0
+D = 0
 class AUV:
     def __init__(self):
         """
@@ -55,6 +60,7 @@ class AUV:
 
         self.pressure_sensor = ms5837.MS5837_30BA()
         self.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
+        controller = PID(50, TOLERANCE, P, I, D)
         print("Radio is not connected.")
 
 
@@ -103,13 +109,13 @@ class AUV:
                     self.depth = self.pressure_sensor.depth()
                 
                 # Reading from IMU sensor
-                heading, pitch, roll = self.imu_sensor.read_euler()
+                self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
                 x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
 
                 print("Data: " ,data) 
                 print("Depth: ", self.depth, "(meters)") 
                 print("Depth: ", self.convert_to_feet(self.depth), "(feet)")
-                print("Heading: %f, Roll: %f, Pitch %f" % ( heading, roll, pitch ) ) 
+                print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ) ) 
                 print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ) )
                 time.sleep(0.01)
 
@@ -122,7 +128,7 @@ class AUV:
             self.mc.zero_out_motors()
 
             print('Radio disconnected')
-                
+
     def start_ballast_sequence(self, data):
         print("Starting ballast sequence")
         self.mc.zero_out_motors()
@@ -139,6 +145,10 @@ class AUV:
             print("our current depth is: ", depth_in_feet)
             time.sleep(0.01)
         print("Reached target depth of: ", target_depth, "(feet)")
+ 
+        # Run PID to correct heading after reaching target_depth
+        controller.pid( self.heading )
+
         self.radio.write("DONE\n")
         return
         #self.begin_recording()
@@ -231,6 +241,7 @@ def main():
     auv.calibrate_communication()
 
     auv.calibrate_motors()
+
     auv.run()
 
 

@@ -2,6 +2,7 @@
 The auv class orchestrates all of the sensors and motors onboard the auv and
 communicates with the base station class.
 """
+from __future__ import print_function
 import sys
 import os
 import time
@@ -33,11 +34,14 @@ REC = 'REC\n'
 # and is sent after communication has been established.
 CAL = 'CAL\n'
 
+IS_DEBUG_MODE = True
 BALLAST_INDEX = 3
-MISSION_DEPTH = .35 # In meters
+MISSION_DEPTH = .65 # In meters
 FEET_TO_METER = 3.28024
 
-TOLERANCE = 20
+CONTROL_TOLERANCE = 10 # tolerance before correcting heading
+TARGET_TOLERANCE = 5 # torance for acknowledging reading the target
+TARGET_HEADING = 50 # in degrees
 P = 0
 I = 0
 D = 0
@@ -60,7 +64,7 @@ class AUV:
 
         self.pressure_sensor = ms5837.MS5837_30BA()
         self.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
-        controller = PID(50, TOLERANCE, P, I, D)
+        self.controller = PID(self.mc, TARGET_HEADING, CONTROL_TOLERANCE, TARGET_TOLERANCE, IS_DEBUG_MODE, P, I, D)
         print("Radio is not connected.")
 
 
@@ -111,12 +115,13 @@ class AUV:
                 # Reading from IMU sensor
                 self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
                 x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
-
-                print("Data: " ,data) 
-                print("Depth: ", self.depth, "(meters)") 
-                print("Depth: ", self.convert_to_feet(self.depth), "(feet)")
-                print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ) ) 
-                print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ) )
+                self.convert_heading()
+                
+                print("Data: " ,data, end = "  ")
+                print("Depth: ", self.depth, "(meters)", end = "  ")
+                print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
+                print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
+                print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
                 time.sleep(0.01)
 
         except Exception, e:
@@ -128,6 +133,10 @@ class AUV:
             self.mc.zero_out_motors()
 
             print('Radio disconnected')
+    
+    def convert_heading(self):
+        if self.heading > 180:
+            self.heading = self.heading - 360
 
     def start_ballast_sequence(self, data):
         print("Starting ballast sequence")
@@ -147,7 +156,10 @@ class AUV:
         print("Reached target depth of: ", target_depth, "(feet)")
  
         # Run PID to correct heading after reaching target_depth
-        controller.pid( self.heading )
+        print("correcting heading")
+        while(not self.controller.pid(self.heading)):
+            self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
+            self.convert_heading()
 
         self.radio.write("DONE\n")
         return
@@ -205,11 +217,18 @@ class AUV:
         print("Done calibrating AUV.")
 
     def calibrate_pressure_sensor(self):
+    
+        pressure_sensor_init = False
+        while not pressure_sensor_init:
+            try: 
+                pressure_sensor_init = self.pressure_sensor.init()
+            except IOError as e:
+                print("Caught error ", e)
+                print("Failed to initialize pressure sensor. Trying again")
 
-        if not self.pressure_sensor.init():
-            print("Pressure sensor is not initialized.")
         if not self.pressure_sensor.read():
             print("Pressure sensor did not read data.")
+
         print("Setting fluid density to salt water")
         self.pressure_sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
         self.depth = self.pressure_sensor.depth()
@@ -217,11 +236,14 @@ class AUV:
         print("Current depth is ", self.convert_to_feet(self.depth), "(feet)")
     
     def calibrate_imu_sensor(self):
-        sensor_connected = self.imu_sensor.begin()
+        sensor_connected = False
         while not sensor_connected:
-            print("Failed to initialize imu sensor. Trying again")
-            sensor_connected = self.imu_sensor.begin()
-            continue;
+            try:
+                sensor_connected = self.imu_sensor.begin()
+            except RuntimeError as e:
+                print("Caught error ", e)
+                print("Failed to initialize imu sensor. Trying again")
+            continue
         
         status, self_test, error = self.imu_sensor.get_system_status()
         if status == 0x01:

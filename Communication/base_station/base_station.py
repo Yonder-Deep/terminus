@@ -29,7 +29,7 @@ turnSpeed = 50
 motorIncrements = 8
 maxSpeed = 100
 speed_callibration = 10
-
+#Hey we're using spaces
 class BaseStation:
     def __init__(self, debug=False):
 
@@ -38,7 +38,10 @@ class BaseStation:
 
         debug: debugging flag
         '''
-        self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
+	# Jack Silberman's radio
+        #self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
+	# Yonder's radio
+        self.radio = Radio('/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0')
         self.speed_f = 0       
         self.joy = None 	
         self.connected_to_auv = False

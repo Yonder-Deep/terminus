@@ -77,65 +77,27 @@ class AUV:
         motor speed  is received and updates motor speeds continuously.
         """
         try:
-            print(self.is_radio_connected_locally())
-            while self.is_radio_connected_locally():
-                # String received contains ASCII characters. This line decodes
-                # those characters into motor speed values.
-                data = [ord(x) for x in list(self.radio.readline())]
 
-                # Check for timeout.
-                if len(data) == 0:
-                    print("len(data) == 0")
-                    self.mc.zero_out_motors()
-                    self.calibrate_communication()
-                    self.radio.write(ESC)
-                    continue
-
-                # Indicate that some data has been received.
-                self.radio.write(REC)
-
-                # Check for packet loss - skip if packet is invalid.
-                
-                if len(data) == 5:
-                    # Parse data - remove newline.
-                    data = data[:-1]
-                    
-                    if data[BALLAST_INDEX] == 1:
-                        print("Dude pressed ballasting button")
-                        self.start_ballast_sequence(data)
-                        data[BALLAST_INDEX] = 0
-                        self.radio.write(REC)
-
-                    # Update motor values.
-                    self.mc.update_motor_speeds(data)
-                
-                print("Data: " ,data) 
-
-                # Reading from pressure sensor
-                if self.pressure_sensor.read():
-                    self.depth = self.pressure_sensor.depth()
-                
                 # Reading from IMU sensor
-                self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
-                x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
-                self.convert_heading()
+            self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
+            x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
+            self.convert_heading()
                 
-                print("Data: " ,data, end = "  ")
-                print("Depth: ", self.depth, "(meters)", end = "  ")
-                print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
-                print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
-                print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
-                time.sleep(0.01)
-
+            print("Data: " ,data, end = "  ")
+            print("Depth: ", self.depth, "(meters)", end = "  ")
+            print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
+            print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
+            print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
+            time.sleep(0.01)
+            # Adjust motor speed base off the feedback
+            while(True):
+                self.mc.pid_motor(pid_feedback)
+                self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
+                self.convert_heading()
+                pid_feedback = self.controller.pid(self.heading)
         except Exception, e:
-            # Close serial conenction with local radio that is disconnected.
-            self.radio.close()
-
-            print("Exception caught was: ", e) 
-            # Zero out motors.
             self.mc.zero_out_motors()
 
-            print('Radio disconnected')
     
     def convert_heading(self):
         if self.heading > 180:
@@ -266,10 +228,7 @@ def main():
     # IMU sensor check
     auv.calibrate_imu_sensor()
 
-    # COMM CHECK
-    auv.calibrate_communication()
 
-    auv.calibrate_motors()
 
     auv.run()
 

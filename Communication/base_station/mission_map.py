@@ -3,10 +3,10 @@ import matplotlib.axes
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from tkinter import *
+from Tkinter import *
 
 # Object & Map Constants
-DEFAULT_FIGURE_SIZE =   20 # Window Size
+DEFAULT_FIGURE_SIZE =  30 # Window Size
 DEFAULT_GRID_SIZE   = 1000 # Grid Size in Meters
 
 # String Constants
@@ -34,7 +34,7 @@ class map:
 
         # Initialize object data/information
         self.waypoints     = list()
-        self.uav_data      = []
+        self.auv_data      = []
         self.units         = METERS
         self.size          = DEFAULT_GRID_SIZE  
         self.zero_offset_x = 0
@@ -57,7 +57,8 @@ class map:
         # Assign default values.
         self.set_range() # Set to default range
 
-       # Re-draw the canvas.
+        self.fig.subplots_adjust( left = 0, bottom = 0, right = 1, top = 1, wspace = 0, hspace = 0 )
+        # Re-draw the canvas.
         self.draw_canvas()
 
         print(type(self.map.plot(0,0)))
@@ -104,8 +105,8 @@ class map:
     
     def on_release(self, mouse):
         self.mouse_pressing = False
-        if mouse.xdata - self.press_position[0] == 0: # Same x as the press.
-            if mouse.ydata - self.press_position[1] == 0: # Same y as the press.
+        if mouse.xdata != None and mouse.xdata - self.press_position[0] == 0: # Same x as the press.
+            if mouse.ydata != None and mouse.ydata - self.press_position[1] == 0: # Same y as the press.
                 self.on_map_click(mouse)
     
     def on_map_scroll(self, mouse):
@@ -168,15 +169,15 @@ class map:
         prompt_submit.pack(side=RIGHT)
         prompt_window.mainloop();
 
-    def add_uav_data(self, x=10, y=10):
+    def add_auv_data(self, x=10, y=10):
         print("Adding UAV data at: ("+x+", "+y+").")
-        self.uav_data.append([x,y])
-        self.draw_uav_path()
+        self.auv_data.append([x,y])
+        self.draw_auv_path()
 
-    def draw_uav_path():
+    def draw_auv_path():
         print("Drawing UAV path.")
         
-        for point in self.uav_data:
+        for point in self.auv_data:
             rel_to_map = [point[0] - self.zero_offset_x,
                           point[1] - self.zero_offset_y ] 
             # self.map.plot(
@@ -196,12 +197,12 @@ class map:
 
     def init_fig(self):
         print ("Initializing figure...")
-        fig = Figure(figsize=(20,20))
+        fig = Figure(figsize=(DEFAULT_FIGURE_SIZE, DEFAULT_FIGURE_SIZE))
         return fig 
 
     def init_map(self):
         print("Initializing map...")
-        graph = self.fig.add_subplot(111)
+        graph = self.fig.add_subplot(111, xmargin = -0.49, ymargin = -0.49)
         graph.grid(b=True, which='major', axis='both')
         
         graph.spines['left'].set_position(('data', 0))
@@ -218,6 +219,8 @@ class map:
         graph.xaxis.tick_bottom()
 
         graph.set_facecolor('xkcd:cyan')
+        graph.legend(loc = 'lower right', title = "Waypoint legend")
+        
         return graph
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint", prompt_window=0):
@@ -304,6 +307,4 @@ class map:
             waypoint[2] = (self.map.plot(waypoint[0], waypoint[1], marker='o',markersize=5, color="red")) # Adds to waypoint
             waypoint[3] = (self.map.annotate(xy=(waypoint[0], waypoint[1]), s=waypoint[2] + " ("+str(round(waypoint[0],3))+","+str(round(waypoint[1],3))+")" ))
 
-root = Tk()
-start = map(root)
-root.mainloop()
+

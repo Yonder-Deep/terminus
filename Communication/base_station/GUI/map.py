@@ -31,9 +31,8 @@ MI_TO_KM = 0001.609340000
 M_TO_KM  = 0000.001000000
 
 # Other Debug Constants
-ZOOM_SCALAR  = 1.15
+ZOOM_SCALAR  = 1.05
 CLOSE_ENOUGH = 0.25
-
 
 class Map:
     def __init__(self,  window):
@@ -81,7 +80,6 @@ class Map:
         self.add_auv_data(370, 260)
         self.add_auv_data(360, 230)
         self.add_auv_data(350, 200)
-
         self.clear()
 
     def clear(self):
@@ -113,11 +111,12 @@ class Map:
 
     def on_move(self, mouse):
         if self.mouse_pressing == True and mouse.xdata != None and mouse.ydata != None:
-            x_delta = (self.press_position[0] - mouse.xdata)/6
-            y_delta = (self.press_position[1] - mouse.ydata)/6
+            x_delta = (self.press_position[0] - mouse.xdata) / 6
+            y_delta = (self.press_position[1] - mouse.ydata) / 6
+            lim     = [self.map.get_xlim(), self.map.get_ylim()]
 
-            self.map.set_xlim( self.map.get_xlim()[0] + x_delta, self.map.get_xlim()[1] + x_delta )
-            self.map.set_ylim( self.map.get_ylim()[0] + y_delta, self.map.get_ylim()[1] + y_delta )
+            self.map.set_xlim( lim[0][0] + x_delta, lim[0][1] + x_delta )
+            self.map.set_ylim( lim[1][0] + y_delta, lim[1][1] + y_delta )
             
             self.draw_canvas()
 
@@ -172,7 +171,7 @@ class Map:
     
     def remove_waypoint_prompt(self, waypoint):
         print("Opening remove-waypoint prompt.")
-        prompt_window = Tk()
+        prompt_window = Toplevel(self.window)
         prompt_window.title("Remove Waypoint \""+ str(waypoint[2]) + "\"?");
         prompt_window.wm_attributes('-type', 'dialog')
         prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"", command=lambda:[self.confirm_remove_waypoint(waypoint), prompt_window.destroy()])
@@ -189,7 +188,7 @@ class Map:
 
     def new_waypoint_prompt(self, x = 0, y = 0):
         print("Opening new-waypoint prompt.")
-        prompt_window = Tk()
+        prompt_window = Toplevel(self.window)
         prompt_window.title("New Waypoint");
         prompt_window.wm_attributes('-type', 'dialog')
         prompt_input  = Entry(prompt_window, bd=5)
@@ -342,3 +341,8 @@ class Map:
         self.units = unit
         self.set_range(x=self.size, y=self.size)
         self.draw_canvas()
+
+    def on_close(self):
+        self.map.cla()
+        self.fig.clf()
+        self.window.destroy()

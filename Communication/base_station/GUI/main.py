@@ -135,9 +135,32 @@ class Main:
         self.abort_button.pack(expand=YES, fill=BOTH, pady = 3)
         
     def create_map(self, frame):
-        self.map = Map(frame)        
+        self.map = Map(frame)
 
+    def on_closing(self):
+        self.map.on_close()
+        self.master.destroy()
+        sys.exit()
+
+# Define the window object.
 root = Tk()
 root.geometry("1200x600") 
+
+# To fix HiDPI-scaling of fonts.
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+developed_res_x = 1920.0
+developed_res_y = 1080.0
+multiplier = screen_width / developed_res_x
+HEADING_SIZE = int(HEADING_SIZE / multiplier)
+BUTTON_SIZE  = int(BUTTON_SIZE  / multiplier)
+STATUS_SIZE  = int(STATUS_SIZE  / multiplier)
+# End fixing HiDPI-scaling of fonts.
+
+# Create the main window.
 Main = Main(root)
+
+# Call function to properly end the program
+root.protocol("WM_DELETE_WINDOW", Main.on_closing)
+
 root.mainloop()

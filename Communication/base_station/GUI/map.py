@@ -80,7 +80,9 @@ class Map:
         self.add_auv_data(370, 260)
         self.add_auv_data(360, 230)
         self.add_auv_data(350, 200)
-        self.clear()
+        #self.clear()
+        self.draw_canvas()
+
 
     def clear(self):
         self.clear_waypoints()
@@ -149,9 +151,9 @@ class Map:
             self.zoom_in()
  
     def on_map_click(self, mouse):
-        if mouse.button == 3: # 3 => Right mouse click
-            self.new_waypoint_prompt(mouse.xdata, mouse.ydata)
         if mouse.button == 1: # 1 => Left mouse click
+            self.new_waypoint_prompt(mouse.xdata, mouse.ydata)
+        if mouse.button == 3: # 3 => Right mouse click
             self.try_remove_waypoint(mouse.xdata, mouse.ydata)
 
     def update_boat_position(self, x = 0, y = 0):
@@ -191,12 +193,23 @@ class Map:
         prompt_window = Toplevel(self.window)
         prompt_window.title("New Waypoint");
         prompt_window.wm_attributes('-type', 'dialog')
-        prompt_input  = Entry(prompt_window, bd=5)
-        prompt_input.insert(0, 'My Waypoint') # Placeholder for input
-        prompt_submit = Button(prompt_window, text="Save", command=lambda:[self.add_waypoint(x, y, str(prompt_input.get())), prompt_window.destroy()])
+        Label(prompt_window, text = "Waypoint Name").grid(row = 0)
+        Label(prompt_window, text = "X").grid(row = 1)
+        Label(prompt_window, text = "Y").grid(row = 2)
+        prompt_input_name = Entry(prompt_window, bd = 5)
+        prompt_input_name.grid(row = 0, column = 1)
+        prompt_input_x = Entry(prompt_window, bd=5)
+        prompt_input_x.grid(row = 1, column = 1)
+        prompt_input_y = Entry(prompt_window, bd = 5)
+        prompt_input_y.grid(row = 2, column = 1)
         
-        prompt_input.pack(side=LEFT, padx=5, pady=5)
-        prompt_submit.pack(side=RIGHT, padx=5, pady=5)
+        prompt_input_name.insert(0, "My waypoint") # Placeholder for input
+        prompt_input_x.insert(0, x) 
+        prompt_input_y.insert(0, y)
+        prompt_submit = Button(prompt_window, text="Save", 
+                                   command=lambda:[self.add_waypoint(float(prompt_input_x.get()), float(prompt_input_y.get()), str(prompt_input_name.get())), prompt_window.destroy()])
+        
+        prompt_submit.grid(row = 3, column = 0, padx=5, pady=5)
         prompt_window.mainloop();
 
     def add_auv_data(self, x=0, y=0):
@@ -268,17 +281,19 @@ class Map:
         return graph
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
-        print( "Adding waypoint " + label + " at position (" + str(x) + ", " + str(y) + ").\n"+
-               " It's longitude is "+ str(x+self.zero_offset_x))
+        print( "Adding waypoint ", label, " at position (", str(x), ", ", str(y), ")")
+        print(" It's longitude is ", str(float(x)+self.zero_offset_x))
 
         self.waypoints.append( [
                                 x,y,
                                 label,
                                 self.map.plot(x, y, marker='o',markersize=5, color=WAYPOINT_COLOR, label=label),
-                                self.map.annotate(xy=(x, y), s=label + " ("+str(round(x+self.zero_offset_x,5))+","+str(round(y+self.zero_offset_y,5))+")" )
+                                self.map.annotate(xy=(x, y), s=label + " ("+str(round(float(x)+self.zero_offset_x,5))+","+str(round(float(y)+self.zero_offset_y,5))+")" )
                                 ] )
         
+        print("added waypoint, readrawing cnavas")
         self.draw_canvas()
+        print("redrew canvas") 
         return [x,y]
 
     def zoom_out(self):

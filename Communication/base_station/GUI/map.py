@@ -193,7 +193,7 @@ class Map:
         prompt_window = Toplevel(self.window)
         prompt_window.title("New Waypoint");
         prompt_window.wm_attributes('-type', 'dialog')
-        Label(prompt_window, text = "Waypoint Name").grid(row = 0)
+        Label(prompt_window, text = "Name").grid(row = 0)
         Label(prompt_window, text = "X").grid(row = 1)
         Label(prompt_window, text = "Y").grid(row = 2)
         prompt_input_name = Entry(prompt_window, bd = 5)

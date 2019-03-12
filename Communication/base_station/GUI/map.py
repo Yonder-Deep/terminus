@@ -31,13 +31,14 @@ MI_TO_KM = 0001.609340000
 M_TO_KM  = 0000.001000000
 
 # Other Debug Constants
-ZOOM_SCALAR  = 1.05
+ZOOM_SCALAR  = 1.15
 CLOSE_ENOUGH = 0.25
 
 class Map:
-    def __init__(self,  window):
+    def __init__(self,  window, main):
         # Define the window.
         self.window = window
+        self.main = main
 
         # Initialize object data/information
         self.waypoints      = list()
@@ -61,7 +62,6 @@ class Map:
         self.fig.canvas.mpl_connect('button_press_event',   self.on_press)  
         self.fig.canvas.mpl_connect('button_release_event', self.on_release)
         self.fig.canvas.mpl_connect('motion_notify_event',  self.on_move)
-        self.fig.canvas.mpl_connect('scroll_event',         self.on_map_scroll)  
     
         # Assign default values.
         self.set_range() # Set to default range
@@ -144,12 +144,6 @@ class Map:
             if mouse.ydata != None and mouse.ydata - self.press_position[1] == 0: # Same y as the press.
                 self.on_map_click(mouse)
     
-    def on_map_scroll(self, mouse):
-        if mouse.button == 'down': # down => Scroll down
-            self.zoom_out()
-        if mouse.button == 'up':   # up   =>  Scroll up
-            self.zoom_in()
- 
     def on_map_click(self, mouse):
         if mouse.button == 1: # 1 => Left mouse click
             self.new_waypoint_prompt(mouse.xdata, mouse.ydata)
@@ -191,7 +185,7 @@ class Map:
         waypoint[3].pop(0).remove() 
         waypoint[4].remove();
         self.draw_canvas()
-        print ("Waypoint \"" + waypoint[2] + "\" removed!")
+        self.main.log("Waypoint \"" + waypoint[2] + "\" removed!")
         return;
 
     def new_waypoint_prompt(self, x = 0, y = 0):
@@ -225,7 +219,7 @@ class Map:
         prompt_window.mainloop();
 
     def add_auv_data(self, x=0, y=0):
-        print("Adding AUV data at: ("+str(x)+", "+str(y)+").")
+        self.main.log("Adding AUV data at: ("+str(x)+", "+str(y)+").")
         self.auv_data[0].append(x)
         self.auv_data[1].append(y)
         self.draw_auv_path()
@@ -295,8 +289,8 @@ class Map:
         return graph
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
-        print("Added waypoint \"" + label + "\" at map-position (" + str(x) + ", " + str(y) + ").")
-        print("Its earth-coordinates are (" + str(float(x)+self.zero_offset_x) + ", " + str(float(y)+self.zero_offset_y) + ").")
+        self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(x) + ", " + str(y) + ").\n" +
+                      "Its earth-coordinates are (" + str(float(x)+self.zero_offset_x) + ", " + str(float(y)+self.zero_offset_y) + ").")
 
         # The code below should never fail (that would be a big problem).
         self.waypoints.append( [

@@ -176,7 +176,13 @@ class Map:
         prompt_window = Toplevel(self.window)
         prompt_window.title("Remove Waypoint \""+ str(waypoint[2]) + "\"?");
         prompt_window.wm_attributes('-type', 'dialog')
-        prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"", command=lambda:[self.confirm_remove_waypoint(waypoint), prompt_window.destroy()])
+        prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"",
+                               command=lambda:
+                               [
+                                self.confirm_remove_waypoint(waypoint),
+                                prompt_window.destroy()
+                               ])
+
         prompt_submit.pack(padx=5, pady=5)
         prompt_window.mainloop()
 
@@ -207,23 +213,31 @@ class Map:
         prompt_input_x.insert(0, x) 
         prompt_input_y.insert(0, y)
         prompt_submit = Button(prompt_window, text="Save", 
-                                   command=lambda:[self.add_waypoint(float(prompt_input_x.get()), float(prompt_input_y.get()), str(prompt_input_name.get())), prompt_window.destroy()])
+                               command=lambda: # Runs multiple functions.
+                               [
+                                self.add_waypoint(float(prompt_input_x.get()), 
+                                                  float(prompt_input_y.get()),
+                                                  str(prompt_input_name.get())),
+                                prompt_window.destroy()
+                               ])
         
         prompt_submit.grid(row = 3, column = 0, padx=5, pady=5)
         prompt_window.mainloop();
 
     def add_auv_data(self, x=0, y=0):
-        print("Adding UAV data at: ("+str(x)+", "+str(y)+").")
+        print("Adding AUV data at: ("+str(x)+", "+str(y)+").")
         self.auv_data[0].append(x)
         self.auv_data[1].append(y)
         self.draw_auv_path()
 
     def draw_auv_path(self):
-        print("Drawing UAV path.")
-      
+        print("Drawing AUV path.")
+
+        # Completely delete the previous line, if it exists.
         if self.auv_path_obj != None:
             self.auv_path_obj.pop(0).remove()
 
+        # Re-draw the entire line using the newly updated x-values (auv_data[0]) and y-values (auv_data[1])
         self.auv_path_obj = self.map.plot(self.auv_data[0], self.auv_data[1], label="AUV Path", color=AUV_PATH_COLOR)
         
         # Re-draw the canvas.
@@ -284,6 +298,7 @@ class Map:
         print("Added waypoint \"" + label + "\" at map-position (" + str(x) + ", " + str(y) + ").")
         print("Its earth-coordinates are (" + str(float(x)+self.zero_offset_x) + ", " + str(float(y)+self.zero_offset_y) + ").")
 
+        # The code below should never fail (that would be a big problem).
         self.waypoints.append( [
                                 x,y,
                                 label,

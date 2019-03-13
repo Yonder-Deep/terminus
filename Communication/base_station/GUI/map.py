@@ -185,7 +185,7 @@ class Map:
         waypoint[3].pop(0).remove() 
         waypoint[4].remove();
         self.draw_canvas()
-        print ("Waypoint removed!")
+        print ("Waypoint \"" + waypoint[2] + "\" removed!")
         return;
 
     def new_waypoint_prompt(self, x = 0, y = 0):
@@ -281,8 +281,8 @@ class Map:
         return graph
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
-        print( "Adding waypoint ", label, " at position (", str(x), ", ", str(y), ")")
-        print(" It's longitude is ", str(float(x)+self.zero_offset_x))
+        print("Added waypoint \"" + label + "\" at map-position (" + str(x) + ", " + str(y) + ").")
+        print("Its earth-coordinates are (" + str(float(x)+self.zero_offset_x) + ", " + str(float(y)+self.zero_offset_y) + ").")
 
         self.waypoints.append( [
                                 x,y,
@@ -291,9 +291,7 @@ class Map:
                                 self.map.annotate(xy=(x, y), s=label + " ("+str(round(float(x)+self.zero_offset_x,5))+","+str(round(float(y)+self.zero_offset_y,5))+")" )
                                 ] )
         
-        print("added waypoint, readrawing cnavas")
         self.draw_canvas()
-        print("redrew canvas") 
         return [x,y]
 
     def zoom_out(self):

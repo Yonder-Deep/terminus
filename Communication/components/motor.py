@@ -48,3 +48,4 @@ class Motor:
         time.sleep (2)
         self.set_speed(0)
         time.sleep(2)
+   #     time.sleep(1)

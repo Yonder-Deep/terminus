@@ -42,8 +42,8 @@ FEET_TO_METER = 3.28024
 # PID Control Constants
 CONTROL_TOLERANCE = 10 # tolerance before correcting heading
 TARGET_TOLERANCE = 5 # torance for acknowledging reading the target
-TARGET_HEADING = 50 # in degrees
-P = 0.02
+TARGET_HEADING = 0 # in degrees
+P = 0.5
 I = 0
 D = 0
 
@@ -65,7 +65,7 @@ class AUV:
             print("Exiting")
             exit(1)
 
-        self.pressure_sensor = ms5837.MS5837_30BA()
+        #self.pressure_sensor = ms5837.MS5837_30BA()
         self.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
         self.controller = PID(self.mc, TARGET_HEADING, CONTROL_TOLERANCE, TARGET_TOLERANCE, IS_DEBUG_MODE, P, I, D)
         print("Radio is not connected.")
@@ -83,19 +83,29 @@ class AUV:
             x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
             self.convert_heading()
                 
-            print("Data: " ,data, end = "  ")
-            print("Depth: ", self.depth, "(meters)", end = "  ")
-            print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
+            #print("Depth: ", self.depth, "(meters)", end = "  ")
+            #print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
             print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
             print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
             time.sleep(0.01)
             # Adjust motor speed base off the feedback
-            while(True):
+            pid_feedback = self.controller.pid(self.heading)
+
+            #import pdb; pdb.set_trace()
+            init_time = time.time()
+            fun_counter = 0
+            while(time.time() - init_time < 120):
+                from random import *
+                if(fun_counter % 1000 == 0):
+                    self.controller.update_target(randint(-180, 180))
+                    fun_counter = 0
+                fun_counter+= 1
                 self.mc.pid_motor(pid_feedback)
                 self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
                 self.convert_heading()
                 pid_feedback = self.controller.pid(self.heading)
-        except Exception, e:
+            self.mc.zero_out_motors()
+        except:
             self.mc.zero_out_motors()
 
     
@@ -221,13 +231,15 @@ class AUV:
 def main():
     # Instantiate motor controller
     auv = AUV()
-
+    print("1")
     # Pressure sensor check
-    auv.calibrate_pressure_sensor()
-    
+    #auv.calibrate_communication()
+    auv.calibrate_motors()
+    #auv.calibrate_pressure_sensor()
+    print("2")
     # IMU sensor check
     auv.calibrate_imu_sensor()
-
+    print("3")
 
 
     auv.run()

@@ -93,14 +93,13 @@ class AUV:
             #import pdb; pdb.set_trace()
             init_time = time.time()
             while(time.time() - init_time < 120):
-                self.mc.pid_motor_pitch(pid_feedback)
+                self.mc.pid_motor_pitch(pid_feedback, self.pitch)
                 self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
                 #self.convert_heading()
                 pid_feedback = self.controller.pid_pitch(self.pitch)
             self.mc.zero_out_motors()
-        except e:
+        except:
             print("Exepction raised")
-            print(e)
             self.mc.zero_out_motors()
 
     

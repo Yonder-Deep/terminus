@@ -1,4 +1,4 @@
-from pid import AUVPID
+from pid import PID
 import numpy as np
 import time
 import matplotlib.pyplot as plt
@@ -8,7 +8,7 @@ i = 0
 d = 0
 
 if __name__ == '__main__':
-    controller = AUVPID(6, p, i, d)
+    controller = PID(6, p, i, d)
     currentPos = 0
     pos_list = np.array([0])
 

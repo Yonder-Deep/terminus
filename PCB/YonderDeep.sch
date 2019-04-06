@@ -1768,46 +1768,6 @@ For more documentation, please visit http://www.raspberrypi.org/documentation/ha
 <wire x1="0" y1="2.54" x2="0" y2="17.78" width="0" layer="21"/>
 <wire x1="0" y1="17.78" x2="2.54" y2="20.32" width="0" layer="21" curve="-90"/>
 </package>
-<package name="BLUEROBOTICS_I2C_LVL_SHFT">
-<description>&lt;h3&gt;Plated Through Hole - 4 Pin&lt;/h3&gt;
-&lt;p&gt;Specifications:
-&lt;ul&gt;&lt;li&gt;Pin count:4&lt;/li&gt;
-&lt;li&gt;Pin pitch:0.1"&lt;/li&gt;
-&lt;/ul&gt;&lt;/p&gt;
-&lt;p&gt;Example device(s):
-&lt;ul&gt;&lt;li&gt;CONN_04&lt;/li&gt;
-&lt;/ul&gt;&lt;/p&gt;</description>
-<pad name="GND3V" x="0" y="-3.81" drill="1.016" diameter="1.8796" shape="square" rot="R180"/>
-<pad name="SDA3V" x="0" y="-1.27" drill="1.016" diameter="1.8796" rot="R180"/>
-<pad name="SCL3V" x="0" y="1.27" drill="1.016" diameter="1.8796" rot="R180"/>
-<pad name="VCC" x="0" y="3.81" drill="1.016" diameter="1.8796" rot="R180"/>
-<rectangle x1="-0.254" y1="3.556" x2="0.254" y2="4.064" layer="51" rot="R90"/>
-<rectangle x1="-0.254" y1="1.016" x2="0.254" y2="1.524" layer="51" rot="R90"/>
-<rectangle x1="-0.254" y1="-1.524" x2="0.254" y2="-1.016" layer="51" rot="R90"/>
-<rectangle x1="-0.254" y1="-4.064" x2="0.254" y2="-3.556" layer="51" rot="R90"/>
-<text x="15.24" y="0.889" size="1.016" layer="25" font="vector" rot="R180" align="bottom-center">Pressure Sensor 
-Breakout</text>
-<text x="1.524" y="-3.81" size="1.016" layer="21" font="vector" rot="R180" align="center-right">GND</text>
-<text x="1.524" y="-1.27" size="1.016" layer="21" font="vector" rot="R180" align="center-right">SDA</text>
-<text x="1.524" y="1.27" size="1.016" layer="21" font="vector" rot="R180" align="center-right">SCL</text>
-<text x="1.524" y="3.81" size="1.016" layer="21" font="vector" rot="R180" align="center-right">VCC</text>
-<pad name="GND5V" x="30.48" y="-3.81" drill="1.016" diameter="1.8796" shape="square" rot="R180"/>
-<pad name="SDA5V" x="30.48" y="-1.27" drill="1.016" diameter="1.8796" rot="R180"/>
-<pad name="SCL5V" x="30.48" y="1.27" drill="1.016" diameter="1.8796" rot="R180"/>
-<pad name="+5V" x="30.48" y="3.81" drill="1.016" diameter="1.8796" rot="R180"/>
-<rectangle x1="30.226" y1="3.556" x2="30.734" y2="4.064" layer="51" rot="R90"/>
-<rectangle x1="30.226" y1="1.016" x2="30.734" y2="1.524" layer="51" rot="R90"/>
-<rectangle x1="30.226" y1="-1.524" x2="30.734" y2="-1.016" layer="51" rot="R90"/>
-<rectangle x1="30.226" y1="-4.064" x2="30.734" y2="-3.556" layer="51" rot="R90"/>
-<text x="29.464" y="-3.81" size="1.016" layer="21" font="vector" rot="R180" align="center-left">GND</text>
-<text x="29.464" y="-1.27" size="1.016" layer="21" font="vector" rot="R180" align="center-left">SDA</text>
-<text x="29.464" y="1.27" size="1.016" layer="21" font="vector" rot="R180" align="center-left">SCL</text>
-<text x="29.464" y="3.81" size="1.016" layer="21" font="vector" rot="R180" align="center-left">+5V</text>
-<wire x1="-1.27" y1="5.08" x2="-1.27" y2="-5.08" width="0.127" layer="21"/>
-<wire x1="-1.27" y1="-5.08" x2="31.75" y2="-5.08" width="0.127" layer="21"/>
-<wire x1="31.75" y1="-5.08" x2="31.75" y2="5.08" width="0.127" layer="21"/>
-<wire x1="31.75" y1="5.08" x2="-1.27" y2="5.08" width="0.127" layer="21"/>
-</package>
 <package name="TERMINAL" urn="urn:adsk.eagle:footprint:6239989/1" locally_modified="yes">
 <wire x1="3.4" y1="-3.4" x2="3.4" y2="2.2" width="0.127" layer="21"/>
 <wire x1="3.4" y1="2.2" x2="3.4" y2="3.6" width="0.127" layer="21"/>
@@ -1870,6 +1830,46 @@ Breakout</text>
 <text x="1.524" y="-1.27" size="1.016" layer="21" font="vector" rot="R180" align="center-right">SCL</text>
 <text x="1.524" y="1.27" size="1.016" layer="21" font="vector" rot="R180" align="center-right">SDA</text>
 <text x="1.524" y="3.81" size="1.016" layer="21" font="vector" rot="R180" align="center-right">GND</text>
+</package>
+<package name="BLUEROBOTICS_I2C_LVL_SHFT">
+<description>&lt;h3&gt;Plated Through Hole - 4 Pin&lt;/h3&gt;
+&lt;p&gt;Specifications:
+&lt;ul&gt;&lt;li&gt;Pin count:4&lt;/li&gt;
+&lt;li&gt;Pin pitch:0.1"&lt;/li&gt;
+&lt;/ul&gt;&lt;/p&gt;
+&lt;p&gt;Example device(s):
+&lt;ul&gt;&lt;li&gt;CONN_04&lt;/li&gt;
+&lt;/ul&gt;&lt;/p&gt;</description>
+<pad name="GND3V" x="30.48" y="-3.81" drill="1.016" diameter="1.8796" shape="square" rot="R180"/>
+<pad name="SDA3V" x="30.48" y="-1.27" drill="1.016" diameter="1.8796" rot="R180"/>
+<pad name="SCL3V" x="30.48" y="1.27" drill="1.016" diameter="1.8796" rot="R180"/>
+<pad name="VCC" x="30.48" y="3.81" drill="1.016" diameter="1.8796" rot="R180"/>
+<rectangle x1="30.226" y1="3.556" x2="30.734" y2="4.064" layer="51" rot="R90"/>
+<rectangle x1="30.226" y1="1.016" x2="30.734" y2="1.524" layer="51" rot="R90"/>
+<rectangle x1="30.226" y1="-1.524" x2="30.734" y2="-1.016" layer="51" rot="R90"/>
+<rectangle x1="30.226" y1="-4.064" x2="30.734" y2="-3.556" layer="51" rot="R90"/>
+<text x="15.24" y="0.889" size="1.016" layer="25" font="vector" rot="R180" align="bottom-center">Pressure Sensor 
+Breakout</text>
+<text x="28.956" y="-3.81" size="1.016" layer="21" font="vector" align="center-right">GND</text>
+<text x="28.956" y="-1.27" size="1.016" layer="21" font="vector" align="center-right">SDA</text>
+<text x="28.956" y="1.27" size="1.016" layer="21" font="vector" align="center-right">SCL</text>
+<text x="28.956" y="3.81" size="1.016" layer="21" font="vector" align="center-right">VCC</text>
+<pad name="GND5V" x="0" y="-3.81" drill="1.016" diameter="1.8796" shape="square" rot="R180"/>
+<pad name="SDA5V" x="0" y="-1.27" drill="1.016" diameter="1.8796" rot="R180"/>
+<pad name="SCL5V" x="0" y="1.27" drill="1.016" diameter="1.8796" rot="R180"/>
+<pad name="+5V" x="0" y="3.81" drill="1.016" diameter="1.8796" rot="R180"/>
+<rectangle x1="-0.254" y1="3.556" x2="0.254" y2="4.064" layer="51" rot="R90"/>
+<rectangle x1="-0.254" y1="1.016" x2="0.254" y2="1.524" layer="51" rot="R90"/>
+<rectangle x1="-0.254" y1="-1.524" x2="0.254" y2="-1.016" layer="51" rot="R90"/>
+<rectangle x1="-0.254" y1="-4.064" x2="0.254" y2="-3.556" layer="51" rot="R90"/>
+<text x="1.524" y="-3.81" size="1.016" layer="21" font="vector" align="center-left">GND</text>
+<text x="1.524" y="-1.27" size="1.016" layer="21" font="vector" align="center-left">SDA</text>
+<text x="1.524" y="1.27" size="1.016" layer="21" font="vector" align="center-left">SCL</text>
+<text x="1.524" y="3.81" size="1.016" layer="21" font="vector" align="center-left">+5V</text>
+<wire x1="-1.27" y1="5.08" x2="-1.27" y2="-5.08" width="0.127" layer="21"/>
+<wire x1="-1.27" y1="-5.08" x2="31.75" y2="-5.08" width="0.127" layer="21"/>
+<wire x1="31.75" y1="-5.08" x2="31.75" y2="5.08" width="0.127" layer="21"/>
+<wire x1="31.75" y1="5.08" x2="-1.27" y2="5.08" width="0.127" layer="21"/>
 </package>
 </packages>
 <symbols>
@@ -1960,21 +1960,6 @@ For more documentation, visit http://www.raspberrypi.org/documentation/hardware/
 <pin name="RST" x="-5.08" y="2.54" length="middle"/>
 <text x="0" y="30.48" size="1.778" layer="95">&gt;NAME</text>
 </symbol>
-<symbol name="PRESSUR_SENS_BREAKOUT">
-<wire x1="-10.16" y1="0" x2="-10.16" y2="20.32" width="0.254" layer="94"/>
-<wire x1="-10.16" y1="20.32" x2="10.16" y2="20.32" width="0.254" layer="94"/>
-<wire x1="10.16" y1="20.32" x2="10.16" y2="0" width="0.254" layer="94"/>
-<wire x1="10.16" y1="0" x2="-10.16" y2="0" width="0.254" layer="94"/>
-<pin name="+5V" x="15.24" y="17.78" length="middle" rot="R180"/>
-<pin name="SCL5V" x="15.24" y="12.7" length="middle" rot="R180"/>
-<pin name="SDA5V" x="15.24" y="7.62" length="middle" rot="R180"/>
-<pin name="GND5V" x="15.24" y="2.54" length="middle" rot="R180"/>
-<pin name="VCC" x="-15.24" y="17.78" length="middle"/>
-<pin name="SCL3V" x="-15.24" y="12.7" length="middle"/>
-<pin name="SDA3V" x="-15.24" y="7.62" length="middle"/>
-<pin name="GND3V" x="-15.24" y="2.54" length="middle"/>
-<text x="0" y="22.86" size="1.778" layer="95" align="bottom-center">Pressure Sensor Breakout</text>
-</symbol>
 <symbol name="BATTERY_CONN">
 <description>&lt;h3&gt;Battery Connection&lt;/h3&gt;
 &lt;p&gt;&lt;/p&gt;</description>
@@ -2009,6 +1994,21 @@ For more documentation, visit http://www.raspberrypi.org/documentation/hardware/
 <text x="-2.54" y="2.54" size="1.27" layer="94" font="vector" align="center-right">SCL</text>
 <text x="-2.54" y="0" size="1.27" layer="94" font="vector" align="center-right">SDA</text>
 <text x="-2.54" y="-2.54" size="1.27" layer="94" font="vector" align="center-right">GND</text>
+</symbol>
+<symbol name="PRESSUR_SENS_BREAKOUT">
+<wire x1="-10.16" y1="0" x2="-10.16" y2="20.32" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="20.32" x2="10.16" y2="20.32" width="0.254" layer="94"/>
+<wire x1="10.16" y1="20.32" x2="10.16" y2="0" width="0.254" layer="94"/>
+<wire x1="10.16" y1="0" x2="-10.16" y2="0" width="0.254" layer="94"/>
+<pin name="+5V" x="15.24" y="17.78" length="middle" rot="R180"/>
+<pin name="SCL5V" x="15.24" y="12.7" length="middle" rot="R180"/>
+<pin name="SDA5V" x="15.24" y="7.62" length="middle" rot="R180"/>
+<pin name="GND5V" x="15.24" y="2.54" length="middle" rot="R180"/>
+<pin name="VCC" x="-15.24" y="17.78" length="middle"/>
+<pin name="SCL3V" x="-15.24" y="12.7" length="middle"/>
+<pin name="SDA3V" x="-15.24" y="7.62" length="middle"/>
+<pin name="GND3V" x="-15.24" y="2.54" length="middle"/>
+<text x="0" y="22.86" size="1.778" layer="95" align="bottom-center">Pressure Sensor Breakout</text>
 </symbol>
 </symbols>
 <devicesets>
@@ -2206,28 +2206,6 @@ More information and support community is available at https://www.element14.com
 </device>
 </devices>
 </deviceset>
-<deviceset name="PRESSURE_SENSOR_BREAKOUT">
-<gates>
-<gate name="G$1" symbol="PRESSUR_SENS_BREAKOUT" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="BLUEROBOTICS_I2C_LVL_SHFT">
-<connects>
-<connect gate="G$1" pin="+5V" pad="+5V"/>
-<connect gate="G$1" pin="GND3V" pad="GND3V"/>
-<connect gate="G$1" pin="GND5V" pad="GND5V"/>
-<connect gate="G$1" pin="SCL3V" pad="SCL3V"/>
-<connect gate="G$1" pin="SCL5V" pad="SCL5V"/>
-<connect gate="G$1" pin="SDA3V" pad="SDA3V"/>
-<connect gate="G$1" pin="SDA5V" pad="SDA5V"/>
-<connect gate="G$1" pin="VCC" pad="VCC"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
 <deviceset name="POWER_IN">
 <gates>
 <gate name="G$1" symbol="BATTERY_CONN" x="0" y="0"/>
@@ -2254,6 +2232,28 @@ More information and support community is available at https://www.element14.com
 <connect gate="G$1" pin="GND" pad="GND"/>
 <connect gate="G$1" pin="SCL" pad="SCL"/>
 <connect gate="G$1" pin="SDA" pad="SDA"/>
+<connect gate="G$1" pin="VCC" pad="VCC"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="PRESSURE_SENSOR_BREAKOUT">
+<gates>
+<gate name="G$1" symbol="PRESSUR_SENS_BREAKOUT" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="BLUEROBOTICS_I2C_LVL_SHFT">
+<connects>
+<connect gate="G$1" pin="+5V" pad="+5V"/>
+<connect gate="G$1" pin="GND3V" pad="GND3V"/>
+<connect gate="G$1" pin="GND5V" pad="GND5V"/>
+<connect gate="G$1" pin="SCL3V" pad="SCL3V"/>
+<connect gate="G$1" pin="SCL5V" pad="SCL5V"/>
+<connect gate="G$1" pin="SDA3V" pad="SDA3V"/>
+<connect gate="G$1" pin="SDA5V" pad="SDA5V"/>
 <connect gate="G$1" pin="VCC" pad="VCC"/>
 </connects>
 <technologies>
@@ -2327,7 +2327,6 @@ More information and support community is available at https://www.element14.com
 <part name="GND11" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND12" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="IMU" library="YonderDeep" deviceset="BNO055" device=""/>
-<part name="U$1" library="YonderDeep" deviceset="PRESSURE_SENSOR_BREAKOUT" device=""/>
 <part name="GND13" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND14" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="5V_IN" library="YonderDeep" deviceset="POWER_IN" device=""/>
@@ -2336,6 +2335,7 @@ More information and support community is available at https://www.element14.com
 <part name="I2C_2" library="YonderDeep" deviceset="I2C_CONN" device=""/>
 <part name="GND16" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND17" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="U$1" library="YonderDeep" deviceset="PRESSURE_SENSOR_BREAKOUT" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -2657,13 +2657,13 @@ More information and support community is available at https://www.element14.com
 <instance part="IMU" gate="G$1" x="17.78" y="25.4">
 <attribute name="NAME" x="17.78" y="55.88" size="1.778" layer="95"/>
 </instance>
-<instance part="U$1" gate="G$1" x="106.68" y="30.48"/>
 <instance part="GND13" gate="1" x="0" y="43.18" rot="R270">
 <attribute name="VALUE" x="-2.54" y="45.72" size="1.778" layer="96" rot="R270"/>
 </instance>
 <instance part="GND14" gate="1" x="78.74" y="33.02" rot="R270">
 <attribute name="VALUE" x="76.2" y="35.56" size="1.778" layer="96" rot="R270"/>
 </instance>
+<instance part="U$1" gate="G$1" x="106.68" y="30.48"/>
 </instances>
 <busses>
 </busses>
@@ -2680,9 +2680,9 @@ More information and support community is available at https://www.element14.com
 <label x="48.26" y="43.18" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$1" gate="G$1" pin="VCC"/>
 <wire x1="91.44" y1="48.26" x2="81.28" y2="48.26" width="0.1524" layer="91"/>
 <label x="81.28" y="48.26" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="VCC"/>
 </segment>
 </net>
 <net name="UART_RX" class="0">
@@ -2701,23 +2701,23 @@ More information and support community is available at https://www.element14.com
 </net>
 <net name="SDA" class="0">
 <segment>
-<pinref part="U$1" gate="G$1" pin="SDA3V"/>
 <wire x1="91.44" y1="38.1" x2="81.28" y2="38.1" width="0.1524" layer="91"/>
 <label x="81.28" y="38.1" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="SDA3V"/>
 </segment>
 </net>
 <net name="SCL" class="0">
 <segment>
-<pinref part="U$1" gate="G$1" pin="SCL3V"/>
 <wire x1="91.44" y1="43.18" x2="81.28" y2="43.18" width="0.1524" layer="91"/>
 <label x="81.28" y="43.18" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="SCL3V"/>
 </segment>
 </net>
 <net name="5V" class="0">
 <segment>
-<pinref part="U$1" gate="G$1" pin="+5V"/>
 <wire x1="121.92" y1="48.26" x2="132.08" y2="48.26" width="0.1524" layer="91"/>
 <label x="129.54" y="48.26" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="+5V"/>
 </segment>
 </net>
 <net name="GND" class="0">
@@ -2727,9 +2727,9 @@ More information and support community is available at https://www.element14.com
 <pinref part="GND13" gate="1" pin="GND"/>
 </segment>
 <segment>
-<pinref part="U$1" gate="G$1" pin="GND3V"/>
 <wire x1="91.44" y1="33.02" x2="81.28" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="GND14" gate="1" pin="GND"/>
+<pinref part="U$1" gate="G$1" pin="GND3V"/>
 </segment>
 </net>
 </nets>

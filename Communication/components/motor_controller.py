@@ -148,6 +148,18 @@ class MotorController:
             #except AttributeError as err:
               #  print("Caught error calibrating motors: ", err)
              #   continue
+    def calibrate_left(self):
+        self.motors[LEFT_MOTOR_INDEX].calibrate_motor()
+
+    def calibrate_right(self):
+        self.motors[RIGHT_MOTOR_INDEX].calibrate_motor()
+
+    def calibrate_front(self):
+        self.motors[FRONT_MOTOR_INDEX].calibrate_motor()
+
+    def calibrate_back(self):
+        self.motors[BACK_MOTOR_INDEX].calibrate_motor()
+
 
     def check_gpio_pins(self):
         io.setmode(io.BOARD)

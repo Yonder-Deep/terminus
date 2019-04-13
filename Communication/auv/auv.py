@@ -35,19 +35,23 @@ REC = 'REC\n'
 CAL = 'CAL\n'
 
 
-# Data packet for manual mode
-MANUAL_DATA_PACKET_LENGTH = 5
-IS_DEBUG_MODE = True
-BALLAST_INDEX = 3
-MISSION_DEPTH = .65 # In meters
-FEET_TO_METER = 3.28024
+# Data packet for manual mode  -   [ LEFT_SP, RIGHT_SP, FRONT_SP, BACK_SP, BALLAST, CALIBRATE ] 
+MANUAL_DATA_PACKET_LENGTH = 6
+IS_DEBUG_MODE   = True
+BALLAST_INDEX   = 3
+CALIBRATE_INDEX = 5
+MISSION_DEPTH   = .65 # In meters
+FEET_TO_METER   = 3.28024
+LEFT_CALIBRATE  = 0
+RIGHT_CALIBRATE = 1 
+FRONT_CALIBRATE = 2
+BACK_CALIBRATE  = 3
+ALL_CALIBRATE   = 4
 
-# New data packet for autonomous mode
+# New data packet for autonomous mode  -   [ TRAVEL_WP, BALLAST ]
 AUTONOMOUS_DATA_PACKET_LENGTH  = 4
-ABORTING_INDEX      = 0
-HOME_WP_INDEX       = 1
-DEST_WP_INDEX  	    = 2
-START_BALLAST_INDEX = 3
+DEST_WP_INDEX  	    = 0
+START_BALLAST_INDEX = 1
 
 
 # PID Control Constants
@@ -96,9 +100,9 @@ class AUV:
                 data = self.get_radio_data()
 		
                 # We are in manual mode!
-                if   len(data) == MANUAL_DATA_PACKET_LENGTH:
+                if   len(data) == MANUAL_DATA_PACKET_LENGTH:     # [ LEFT, RIGHT, FRONT, BACK, BALLAST, CALIBRATE ]
                    self.handle_manual_data(data)
-                elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ IS_ABORTING, HOME_WP, NAV_WP, WANTS_BALLAST]
+                elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ ABORT, HOME_WP, NAV_WP, BALLAST]
 	           self.handle_autonomous_data(data)
                 
                 print("Data: " ,data) 
@@ -163,18 +167,26 @@ class AUV:
             data[BALLAST_INDEX] = 0
             self.radio.write(REC)
 
+        # Begin parsing which motor(s) we want to calibrate.
+        MOTOR_TO_CALIBRATE = data[CALIBRATE_INDEX]
+        if MOTOR_TO_CALIBRATE == LEFT_CALIBRATE:
+            self.mc.calibrate_left()
+        if MOTOR_TO_CALIBRATE == RIGHT_CALIBRATE:
+            self.mc.calibrate_right()
+        if MOTOR_TO_CALIBRATE == FRONT_CALIBRATE:
+            self.mc.calibrate_front()
+        if MOTOR_TO_CALIBRATE == BACK_CALIBRATE:
+            self.mc.calibrate_back()
+        if MOTOR_TO_CALIBRATE == ALL_CALIBRATE:
+            self.mc.calibrate_motors()
+        
         # Update motor values.
         self.mc.update_motor_speeds(data)
 
     def handle_autonomous_data(self, data):
         data = data[:-1]
-                   
-	if data[ABORTING_INDEX]:
-	    coordinates = data[HOME_WP_INDEX].split(",")
-	    coordinates[0] = float(coordinates[0])
-	    coordinates[1] = float(coordinates[1])
-            self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
-	elif data[START_BALLAST_INDEX]:
+          
+	if data[START_BALLAST_INDEX]:
 	    self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
 	else:
 	    coordinates = data[NAV_WP_INDEX].split(",")
@@ -196,15 +208,18 @@ class AUV:
             # we are travelling to a waypoint!
             while self.is_radio_connected_locally():
                 current_data = self.get_radio_data()
-                
+               
+                # New data? 
                 if   len(current_data) == MANUAL_DATA_PACKET_LENGTH:
                    self.handle_manual_data(current_data)
                    return
-                elif len(current_data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ IS_ABORTING, HOME_WP, NAV_WP, WANTS_BALLAST]
+                elif len(current_data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ NAV_WP, BALLAST]
 	           if str(original_data) != str(current_data): # IF we recieved a different instruction set...
                        self.handle_autonomous_data(current_data)
                        return
-                
+            
+                # No new data was given to the AUV, so, continue moving
+                # to our original waypoint.    
                 self.forward_loop(x, y)
 		
         except Exception, e:
@@ -360,8 +375,7 @@ def main():
 
     # COMM CHECK
     auv.calibrate_communication()
-
-    auv.calibrate_motors()
+    # auv.calibrate_motors()
 
     auv.run()
 

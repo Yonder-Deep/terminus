@@ -15,7 +15,7 @@ class Radio:
         self.ser = serial.Serial(serial_path,
                                 baudrate = baudrate, parity = serial.PARITY_NONE,
                                 stopbits = serial.STOPBITS_ONE, bytesize = serial.EIGHTBITS,
-                                timeout = 5
+                                timeout = 2
                                 )
     def write(self,message):
         """

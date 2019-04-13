@@ -1,7 +1,19 @@
+import sys
+import os
+
+# Set PYTHONPATH to include base station
+split_path = os.path.abspath(__file__).split('/')
+split_path = split_path[0:len(split_path) - 2]
+base_station_path = "/".join(split_path) 
+print("bs_path is: ", base_station_path) 
+sys.path.append(base_station_path)
+
+from base_station import BaseStation
 import datetime
 import tkMessageBox
 from Tkinter import *
 from map import Map
+
 
 TOP_FRAME_HEIGHT = 550
 BOT_FRAME_HEIGHT = 30
@@ -28,8 +40,9 @@ BUTTON_WIDTH = 17
 BUTTON_HEIGHT = 2
 
 class Main:
-    def __init__(self, master):
+    def __init__(self, master, base_station):
         self.master = master
+        self.base_station = base_station
         self.master.title("Yonder Arctic OPS")
 
         self.top_frame = Frame(self.master, bd = 1) 
@@ -100,6 +113,16 @@ class Main:
         self.comms_status_string.set("Comms Status: Not connected")
         self.comms_status.place(relx = 0.05, rely = 0.70, anchor = 'sw')
 
+        self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
+                                               padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
+        self.calibrate_xbox_button.pack()
+        self.calibrate_xbox_button.place(relx = 0.05, rely = 0.80);
+        self.establish_comm_button           = Button(self.status_frame, text = "Connect to AUV", takefocus = False, width = BUTTON_WIDTH, height = BUTTON_HEIGHT,
+                                               padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_communication )
+        self.establish_comm_button.pack() 
+        self.establish_comm_button.place(relx = 0.05, rely = 0.90); 
+
+
     def init_log_frame(self):
         self.log_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 700, bd = 1, relief = SUNKEN )
         self.log_frame.pack( fill = BOTH, padx = PADX, pady = PADY, side = LEFT, expand = NO)
@@ -116,7 +139,7 @@ class Main:
         self.console.config(state = NORMAL)
         self.console.insert(END, time + string + "\n")
         self.console.config(state = DISABLED)
-        
+	        
     def init_calibrate_frame(self): 
         self.calibrate_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 350, bd = 1, relief = SUNKEN)
         self.calibrate_frame.pack( fill = Y, padx = PADX, pady = PADY, side = LEFT, expand = YES)
@@ -125,37 +148,36 @@ class Main:
         self.calibrate_label = Label(self.calibrate_frame, text = "Motor Calibration", takefocus = False, font = (FONT, HEADING_SIZE))
         self.calibrate_label.grid(row=0, columnspan=3, sticky=W+E)
         
-#        self.calibrate_label.pack(side = TOP)
 
         self.left_calibrate_button = Button( self.calibrate_frame, text = "LEFT", takefocus = False, #width = 15, height = 3,
-                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = lambda: None )
+                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
+                                                command = lambda: self.base_station.set_calibrate_flag(0) )
         
         self.left_calibrate_button.grid(row = 2, column = 0, pady=cPADY)
-#        self.left_calibrate_button.pack(side = LEFT) 
 
         self.right_calibrate_button = Button(self.calibrate_frame, text = "RIGHT", takefocus = False, #width = 15, height = 3,
-                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = lambda: None )
+                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
+                                                command = lambda: self.base_station.set_calibrate_flag(1) )
  
         self.right_calibrate_button.grid(row = 2, column = 2, pady=cPADY)
- #       self.right_calibrate_button.pack(side = RIGHT) 
 
         self.front_calibrate_button = Button( self.calibrate_frame, text = "FRONT", takefocus = False, #width = 15, height = 3,
-                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = lambda: None )
+                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
+                                                command = lambda: self.base_station.set_calibrate_flag(2) )
         
         self.front_calibrate_button.grid(row=1, column=1, pady=cPADY)
-        #self.front_calibrate_button.pack(side = TOP)
 
         self.calibrate_all_button = Button(self.calibrate_frame, text = "ALL", takefocus = False, #width = 15, height = 3,
-                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = lambda: None )
+                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
+                                                command = lambda: self.base_station.set_calibrate_flag(4) )
 
         self.calibrate_all_button.grid(row=2, column=1, pady=cPADY)
-        #self.calibrate_all_button.place(relx = 1.0, rely = 1.0, anchor = CENTER) 
 
         self.back_calibrate_button = Button( self.calibrate_frame, text = "Back", takefocus = False,# width = 15, height = 3,
-                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = lambda: None )
+                                                padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
+                                                command = lambda: self.base_station.set_calibrate_flag(3) )
         
         self.back_calibrate_button.grid(row=3, column=1, pady=cPADY)
-        #self.back_calibrate_button.pack(side = BOTTOM)
 
     def init_config_frame(self):
         self.config_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 400, bd = 1, relief = SUNKEN)
@@ -224,11 +246,25 @@ HEADING_SIZE = int(HEADING_SIZE / multiplier)
 BUTTON_SIZE  = int(BUTTON_SIZE  / multiplier)
 STATUS_SIZE  = int(STATUS_SIZE  / multiplier)
 # End fixing HiDPI-scaling of fonts.
-
+ 
+bs = BaseStation(root)
 # Create the main window.
-Main = Main(root)
-
+Main = Main(root, bs)
+bs.set_main( Main )
 # Call function to properly end the program
 root.protocol("WM_DELETE_WINDOW", Main.on_closing)
-
-root.mainloop()
+#bs.calibrate_controller() 
+root.update_idletasks()
+root.update()
+controller_connected = False
+radio_connected = False
+while not controller_connected or not radio_connected:
+    if bs.joy is not None:
+        controller_connected = True
+    if bs.connected_to_auv:
+        radio_connected = True
+    root.update_idletasks()
+    root.update() 
+print("controller connected, starting run()")
+bs.run()
+#root.mainloop()

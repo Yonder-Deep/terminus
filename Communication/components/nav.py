@@ -8,6 +8,7 @@ import os
 class NavController:
 	def __init__(self, joy, debug=False):
 		self.joy = joy
+		self.counter = 0
 		self.state = None
 		self.maxSpeed = 50
 		self.turnSpeed = 50
@@ -48,12 +49,16 @@ class NavController:
 					motorSpeedRight = 0
 					#setting ballast speed to half speed downwards
 					ballastSpeed = 125
-
+				if self.joy.A():
+					self.counter = 0
+                
 				if self.joy.X():
-					motorSpeedLeft = 0
-					motorSpeedRight = 0
+					self.counter += 1 if self.counter < 99 else self.counter
+					motorSpeedLeft = self.counter
+					motorSpeedRight = self.counter
 					#setting ballast speed to half speed upwards
-					ballastSpeed = 25
+					ballastSpeed = 0
+                    
 		if motorSpeedLeft < 0:
 				motorSpeedLeft *= -1
 				motorSpeedLeft += 100
@@ -71,7 +76,7 @@ class NavController:
 			print("Right motor ", str(motorSpeedRight)); 
 
 					
-		speed_f = chr(motorSpeedLeft) + chr(motorSpeedRight) + chr(ballastSpeed) + chr(ballast) + '\n'
+		speed_f = chr(motorSpeedLeft) + chr(motorSpeedRight) + chr(ballastSpeed) + chr(ballast)
 		"""for i, speed in enumerate(speed_f):
 			print("index ", i)
 			print("is speed: ", speed)

@@ -10,8 +10,11 @@ import os
 split_path = os.path.abspath(__file__).split('/')
 split_path = split_path[0:len(split_path) - 2]
 components_path = "/".join(split_path) + "/components"
+#ui_path = "/".join(split_path) + "/base_station/GUI"
+#print("ui_path is: ", ui_path) 
 sys.path.append(components_path)
 
+#import main 
 import serial
 import time
 import struct
@@ -28,10 +31,12 @@ minSpeed = 0
 turnSpeed = 50
 motorIncrements = 8
 maxSpeed = 100
-speed_callibration = 10
+speed_calibration = 10
+is_Manual = True
+
 #Hey we're using spaces
 class BaseStation:
-    def __init__(self, debug=False):
+    def __init__(self, root, debug=False):
 
         '''
         Initialize Serial Port and Class Variables
@@ -41,6 +46,7 @@ class BaseStation:
 	# Jack Silberman's radio
         #self.radio = Radio('/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN0393EE-if00-port0')
 	# Yonder's radio
+        self.root = root
         self.radio = Radio('/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0')
         self.speed_f = 0       
         self.joy = None 	
@@ -48,6 +54,10 @@ class BaseStation:
         self.navController = None
         self.debug = debug
         self.esc_connected = False
+        self.cal_flag = 9
+
+    def set_main(self, Main):
+        self.main = Main 
 
     def calibrate_controller(self):
         '''
@@ -58,18 +68,28 @@ class BaseStation:
         #os.system('sudo rmmod xpad 2> /dev/null')
 
         # Construct joystick and check that the driver/controller are working.
-        self.joy = xbox.Joystick()
+        self.joy = None
+        self.main.log("Trying to connect xbox controller")
+        while self.joy is None:
+            self.root.update_idletasks()
+            self.root.update()
+            try:
+                self.joy = xbox.Joystick()
+            except Exception as e:
+                continue
+        self.main.log("Xbox controller connected")                
 
         #Instantiate New NavController With Joystick
         self.navController = NavController(self.joy, self.debug)
 
         # Check that the xbox controller is connected.
-        print("Press the back button to calibrate the controller...")
-        while not self.joy.Back():
-            pass
-        print("Controller calibrated.\n")
+        #while not self.joy.Back():
+         #   self.root.update_idletasks()
+          #  self.root.update()
         
-        self.calibrate_communication()
+        self.main.log("Controller connected\n")
+
+        #self.calibrate_communication()
 
     def calibrate_communication(self):
         '''
@@ -81,67 +101,84 @@ class BaseStation:
         # Flush the serial connection.
         self.radio.flush()
 
-        print("Press the start button to establish connection to AUV...")
+        self.main.log("Attempting to establish connection to AUV...")
+        self.root.update_idletasks()
+        self.root.update()
 
         # Wait until connection is established.
         while not self.connected_to_auv:
             
             # Send calibrate signal on start press.
-            if self.joy.Start() == 1:
+            #if self.joy.Start() == 1:
                 
-                print("Attempting to connect to AUV...")
+            #print("Attempting to connect to AUV...")
                 
-                #Send Calibration Signal To AUV
-                self.radio.write('CAL\n')
+            #Send Calibration Signal To AUV
+            self.radio.write('CAL\n')
 
                 #print(self.radio.readline())
 
                 # Await response from AUV. Times out after 1 second.
-                self.connected_to_auv = (self.radio.readline() == 'CAL\n')
-                if not self.connected_to_auv:
-                    print("self.radio.readline(): ", self.radio.readline())
-                    print("self.connected_to_auv: ", self.connected_to_auv)
-                    print("Connection timed out, please try again...\n")
-		self.radio.flush()
+            self.connected_to_auv = (self.radio.readline() == 'CAL\n')
+            if not self.connected_to_auv:
+                print("self.radio.readline(): ", self.radio.readline())
+                print("self.connected_to_auv: ", self.connected_to_auv)
+                self.main.log("Connection timed out, please try again...\n")
 
-        print("Connection established with AUV.")
+            self.root.update_idletasks()
+            self.root.update()	
 
+    	self.radio.flush()
 
- 
+        self.main.log("Connection established with AUV.")
+
+    def set_calibrate_flag(self, cal_flag):
+        self.cal_flag = cal_flag
+
     def run(self):
         ''' 
         Runs the controller loop for the AUV.
         '''
-
+        print("inside run") 
         #Check ESC Connection Status 
-        data = self.radio.readline()
-        while data != "ESC\n":
-            data = self.radio.readline()
+#        data = self.radio.readline()
+ #       while data != "ESC\n":
+  #          print("isnide esc while loop")
+   #         data = self.radio.readline()
+    #        self.root.update_idletasks()
+     #       self.root.update()
         
         self.esc_connected = True
         
         #Start Control Loop
-	i = 1
-	self.radio.write(chr(speed_callibration))
+        #i = 1
+        self.radio.write(chr(speed_calibration))
         while self.esc_connected:
-            print("counter: ", i)
+            #print("counter: ", i)
             #Get packet
+            print("grabbing speed packet")
             self.speed_f = self.navController.getPacket()
+            self.speed_f = self.speed_f + chr(self.cal_flag) + '\n'
    
-	    if self.debug:
-                with open('data.txt', 'w') as f:
-                    f.write(self.speed_f)
+		#	if self.debug:
+         #       with open('data.txt', 'w') as f:
+          #          f.write(self.speed_f)
 
             print("Speed f ", self.speed_f)
             
+        
+            if is_Manual:
+                self.radio.write(self.speed_f)
+            #else:
+                # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
+                #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
 
-            self.radio.write(self.speed_f)
- 	    print("self.speed_f[3] is: ", self.speed_f[3])
-	    if ord(self.speed_f[3]) == 1:
-		print("entering ballast state")
-		self.enter_ballast_state() 
-		print("Finished ballasting")
-		self.radio.write(chr(speed_callibration))
+ 	    #print("self.speed_f[3] is: ", self.speed_f[3])
+	    #if ord(self.speed_f[3]) == 1:
+		#print("entering ballast state")
+		#self.enter_ballast_state() 
+		#print("Finished ballasting")
+		#self.radio.write(chr(speed_callibration))
             
             # Await response from AUV.
             if self.radio.readline() != 'REC\n':
@@ -158,6 +195,9 @@ class BaseStation:
                     data = self.radio.readline()
             
             time.sleep(0.08)
+            self.root.update_idletasks()
+            self.root.update()
+            
 
     def enter_ballast_state(self): 
 		reconnected_after_ballasting = False
@@ -178,9 +218,9 @@ def main():
 
     bs = BaseStation(debug=args.debug)
     
-    bs.calibrate_controller()
+    #bs.calibrate_controller()
     
-    bs.run()
+    #bs.run()
 
 
 if __name__ == '__main__':

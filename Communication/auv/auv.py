@@ -34,10 +34,25 @@ REC = 'REC\n'
 # and is sent after communication has been established.
 CAL = 'CAL\n'
 
-IS_DEBUG_MODE = True
-BALLAST_INDEX = 3
-MISSION_DEPTH = .65 # In meters
-FEET_TO_METER = 3.28024
+
+# Data packet for manual mode  -   [ LEFT_SP, RIGHT_SP, FRONT_SP, BACK_SP, BALLAST, CALIBRATE ] 
+MANUAL_DATA_PACKET_LENGTH = 6
+IS_DEBUG_MODE   = True
+BALLAST_INDEX   = 3
+CALIBRATE_INDEX = 5
+MISSION_DEPTH   = .65 # In meters
+FEET_TO_METER   = 3.28024
+LEFT_CALIBRATE  = 0
+RIGHT_CALIBRATE = 1 
+FRONT_CALIBRATE = 2
+BACK_CALIBRATE  = 3
+ALL_CALIBRATE   = 4
+
+# New data packet for autonomous mode  -   [ TRAVEL_WP, BALLAST ]
+AUTONOMOUS_DATA_PACKET_LENGTH  = 4
+DEST_WP_INDEX  	    = 0
+START_BALLAST_INDEX = 1
+
 
 # PID Control Constants
 CONTROL_TOLERANCE = 10 # tolerance before correcting heading
@@ -65,6 +80,7 @@ class AUV:
             print("Exiting")
             exit(1)
 
+	self.is_manual = True
         self.pressure_sensor = ms5837.MS5837_30BA()
         self.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
         self.controller = PID(self.mc, TARGET_HEADING, CONTROL_TOLERANCE, TARGET_TOLERANCE, IS_DEBUG_MODE, P, I, D)
@@ -73,58 +89,27 @@ class AUV:
 
     def run(self):
         """
-        Reads motor speeds. This function checks if the correct
-        motor speed  is received and updates motor speeds continuously.
+        Reads radio data. This function checks if the correct
+        data packet length was passed and handles it accordingly.
         """
         try:
             print(self.is_radio_connected_locally())
             while self.is_radio_connected_locally():
                 # String received contains ASCII characters. This line decodes
                 # those characters into motor speed values.
-                data = [ord(x) for x in list(self.radio.readline())]
-
-                # Check for timeout.
-                if len(data) == 0:
-                    print("len(data) == 0")
-                    self.mc.zero_out_motors()
-                    self.calibrate_communication()
-                    self.radio.write(ESC)
-                    continue
-
-                # Indicate that some data has been received.
-                self.radio.write(REC)
-
-                # Check for packet loss - skip if packet is invalid.
-                
-                if len(data) == 5:
-                    # Parse data - remove newline.
-                    data = data[:-1]
-                    
-                    if data[BALLAST_INDEX] == 1:
-                        print("Dude pressed ballasting button")
-                        self.start_ballast_sequence(data)
-                        data[BALLAST_INDEX] = 0
-                        self.radio.write(REC)
-
-                    # Update motor values.
-                    self.mc.update_motor_speeds(data)
+                data = self.get_radio_data()
+		
+                # We are in manual mode!
+                if   len(data) == MANUAL_DATA_PACKET_LENGTH:     # [ LEFT, RIGHT, FRONT, BACK, BALLAST, CALIBRATE ]
+                   self.handle_manual_data(data)
+                elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ ABORT, HOME_WP, NAV_WP, BALLAST]
+	           self.handle_autonomous_data(data)
                 
                 print("Data: " ,data) 
 
-                # Reading from pressure sensor
-                if self.pressure_sensor.read():
-                    self.depth = self.pressure_sensor.depth()
-                
-                # Reading from IMU sensor
-                self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
-                x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
-                self.convert_heading()
-                
-                print("Data: " ,data, end = "  ")
-                print("Depth: ", self.depth, "(meters)", end = "  ")
-                print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
-                print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
-                print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
+                self.print_pressure_data()
+                self.print_imu_data()
+     
                 time.sleep(0.01)
 
         except Exception, e:
@@ -137,6 +122,128 @@ class AUV:
 
             print('Radio disconnected')
     
+    def print_pressure_data(self):
+        # Reading from pressure sensor
+        if self.pressure_sensor.read():
+            self.depth = self.pressure_sensor.depth()
+        
+        print("Depth: ", self.depth, "(meters)", end = "  ")
+        print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
+   
+    def print_imu_data(self):
+        # Reading from IMU sensor
+        self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
+        x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
+        self.convert_heading()
+                
+        print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
+        print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
+  
+    def get_radio_data(self):
+        # String received contains ASCII characters. This line decodes
+        # those characters into motor speed values.
+	data = [ord(x) for x in list(self.radio.readline())]
+
+        # Check for timeout.
+        if len(data) == 0:
+            print("len(data) == 0")
+            self.mc.zero_out_motors()
+            self.calibrate_communication()
+            self.radio.write(ESC)
+            continue
+
+        # Indicate that some data has been received.
+        self.radio.write(REC)
+        
+        return data;
+
+    def handle_manual_data(self, data):
+        # Parse data - remove newline.
+        data = data[:-1]
+                    
+        if data[BALLAST_INDEX] == 1:
+            print("Dude pressed ballasting button")
+            self.start_ballast_sequence(data)
+            data[BALLAST_INDEX] = 0
+            self.radio.write(REC)
+
+        # Begin parsing which motor(s) we want to calibrate.
+        MOTOR_TO_CALIBRATE = data[CALIBRATE_INDEX]
+        if MOTOR_TO_CALIBRATE == LEFT_CALIBRATE:
+            self.mc.calibrate_left()
+        if MOTOR_TO_CALIBRATE == RIGHT_CALIBRATE:
+            self.mc.calibrate_right()
+        if MOTOR_TO_CALIBRATE == FRONT_CALIBRATE:
+            self.mc.calibrate_front()
+        if MOTOR_TO_CALIBRATE == BACK_CALIBRATE:
+            self.mc.calibrate_back()
+        if MOTOR_TO_CALIBRATE == ALL_CALIBRATE:
+            self.mc.calibrate_motors()
+        
+        # Update motor values.
+        self.mc.update_motor_speeds(data)
+
+    def handle_autonomous_data(self, data):
+        data = data[:-1]
+          
+	if data[START_BALLAST_INDEX]:
+	    self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
+	else:
+	    coordinates = data[NAV_WP_INDEX].split(",")
+	    coordinates[0] = float(coordinates[0]
+            coordinates[1] = float(coordinates[1])
+            self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
+ 
+    def nav_to_waypoint(self, data, x, y, radio):
+        self.original_data = data # If our new data != original_data, we have new
+                                  # instructions coming in to the AUV. So, logically,
+                                  # interupt the current task and parse new data.
+
+        # Get the angle from North from our position and the long/lat position (North being up or 0)
+        angle_from_north = self.get_angle_from_north(x, y)
+        self.rotate_to_heading(angle_from_north)
+        
+        try:
+            # We NEED to check if we want to ABORT/Change Waypoint WHILE 
+            # we are travelling to a waypoint!
+            while self.is_radio_connected_locally():
+                current_data = self.get_radio_data()
+               
+                # New data? 
+                if   len(current_data) == MANUAL_DATA_PACKET_LENGTH:
+                   self.handle_manual_data(current_data)
+                   return
+                elif len(current_data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ NAV_WP, BALLAST]
+	           if str(original_data) != str(current_data): # IF we recieved a different instruction set...
+                       self.handle_autonomous_data(current_data)
+                       return
+            
+                # No new data was given to the AUV, so, continue moving
+                # to our original waypoint.    
+                self.forward_loop(x, y)
+		
+        except Exception, e:
+            # Close serial conenction with local radio that is disconnected.
+            self.radio.close()
+
+            print("Exception caught was: ", e) 
+            # Zero out motors.
+            self.mc.zero_out_motors()
+
+            print('Radio disconnected')
+
+    def rotate_to_heading(self, heading): # Heading is the angle from North on a compass.
+        pass
+        
+    def get_angle_from_north(self, x, y): # X, Y is the long/lat we are travelling to; we know where we are; now get angle from 0
+	pass
+
+    def forward_loop(self, x, y): # Move forward until we are close-enough to x, y
+        # Set motor to full-forward
+        
+        # Move until we are there...???
+        pass
+
     def convert_heading(self):
         if self.heading > 180:
             self.heading = self.heading - 360
@@ -268,8 +375,7 @@ def main():
 
     # COMM CHECK
     auv.calibrate_communication()
-
-    auv.calibrate_motors()
+    # auv.calibrate_motors()
 
     auv.run()
 

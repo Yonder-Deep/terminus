@@ -26,8 +26,8 @@ class NavController:
 		if self.joy.rightBumper():
 				rightStickValue = math.floor(self.joy.rightX() * self.motorIncrements) / self.motorIncrements
 
-				motorSpeedRight = int(self.turnSpeed * (-rightStickValue))
-				motorSpeedLeft = int(self.turnSpeed * rightStickValue)
+				motorSpeedRight = 75#int(self.turnSpeed * (-rightStickValue))
+				motorSpeedLeft = 75#int(self.turnSpeed * rightStickValue)
 				motorSpeedBase = 0
 		# Left, right, down, up controls
 		else:

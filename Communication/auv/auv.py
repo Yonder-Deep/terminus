@@ -34,10 +34,22 @@ REC = 'REC\n'
 # and is sent after communication has been established.
 CAL = 'CAL\n'
 
+
+# Data packet for manual mode
+MANUAL_DATA_PACKET_LENGTH = 5
 IS_DEBUG_MODE = True
 BALLAST_INDEX = 3
 MISSION_DEPTH = .65 # In meters
 FEET_TO_METER = 3.28024
+
+# New data packet for autonomous mode
+AUTONOMOUS_DATA_PACKET_LENGTH  = 5
+ABORTING_INDEX      = 0
+HOME_WP_INDEX       = 1
+DEST_WP_INDEX  	    = 2
+START_BALLAST_INDEX = 3
+SWITCH_MODE_INDEX   = 4
+
 
 # PID Control Constants
 CONTROL_TOLERANCE = 10 # tolerance before correcting heading
@@ -65,6 +77,7 @@ class AUV:
             print("Exiting")
             exit(1)
 
+	self.is_manual = True
         self.pressure_sensor = ms5837.MS5837_30BA()
         self.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
         self.controller = PID(self.mc, TARGET_HEADING, CONTROL_TOLERANCE, TARGET_TOLERANCE, IS_DEBUG_MODE, P, I, D)
@@ -94,21 +107,40 @@ class AUV:
                 # Indicate that some data has been received.
                 self.radio.write(REC)
 
-                # Check for packet loss - skip if packet is invalid.
                 
-                if len(data) == 5:
-                    # Parse data - remove newline.
-                    data = data[:-1]
+                
+		if is_manual: 
+                    if len(data) == MANUAL_DATA_PACKET_LENGTH:
+                        # Parse data - remove newline.
+                        data = data[:-1]
                     
-                    if data[BALLAST_INDEX] == 1:
-                        print("Dude pressed ballasting button")
-                        self.start_ballast_sequence(data)
-                        data[BALLAST_INDEX] = 0
-                        self.radio.write(REC)
+                        if data[BALLAST_INDEX] == 1:
+                            print("Dude pressed ballasting button")
+                            self.start_ballast_sequence(data)
+                            data[BALLAST_INDEX] = 0
+                            self.radio.write(REC)
 
-                    # Update motor values.
-                    self.mc.update_motor_speeds(data)
-                
+                        # Update motor values.
+                        self.mc.update_motor_speeds(data)
+                else: # We are in autonomous mode!
+                    if len(data) == AUTONOMOUS_DATA_PACKET_LENGTH:
+                        data = data[:-1]
+                   
+                        if data[SWITCH_MODE_INDEX]:
+                           is_manual = True
+                        elif data[ABORTING_INDEX]:
+                            coordinates = data[HOME_WP_INDEX].split(",")
+                            coordinates[0] = float(coordinates[0])
+                            coordinates[1] = float(coordinates[1])
+                            self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
+                       elif data[START_BALLAST_INDEX]:
+                            self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
+                       else:
+                           coordinates = data[NAV_WP_INDEX].split(",")
+                           coordinates[0] = float(coordinates[0]
+                           coordinates[1] = float(coordinates[1])
+                           self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
+			 
                 print("Data: " ,data) 
 
                 # Reading from pressure sensor
@@ -137,6 +169,25 @@ class AUV:
 
             print('Radio disconnected')
     
+    def nav_to_waypoint(self, x, y, radio):
+        # Get the angle from North from our position and the long/lat position (North being up or 0)
+        angle_from_north = self.get_angle_from_north(x, y)
+	
+        self.rotate_to_heading(angle_from_north)
+        self.forward_loop(x, y)
+
+    def rotate_to_heading(self, heading): # Heading is the angle from North on a compass.
+        pass
+        
+    def get_angle_from_north(self, x, y): # X, Y is the long/lat we are travelling to, we know where we are, get angle from 0
+	pass
+
+    def forward_loop(self, x, y): # Move forward until we are close-enough to x, y
+        # Set motor to full-forward
+        
+        # Move until we are there...???
+        pass
+
     def convert_heading(self):
         if self.heading > 180:
             self.heading = self.heading - 360

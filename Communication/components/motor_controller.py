@@ -38,7 +38,7 @@ class MotorController:
         self.pi = pigpio.pi()
 
         # Motor object definitions.
-        self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN, FRONT_GPIO_PIN, BACK_GPIO_PIN]
+        self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN]#, FRONT_GPIO_PIN, BACK_GPIO_PIN]
         self.pi_pins = [LEFT_PI_PIN, 23, 12, 18]
 
         self.motors = [Motor(gpio_pin=pin, pi=self.pi) for pin in self.motor_pins]
@@ -139,6 +139,7 @@ class MotorController:
         """
         ct = 0
         for motor in self.motors:
+                     
             ct += 1
         #    print("Inside calibrating_motors for loop")
             print("Calibrating motor ", ct)

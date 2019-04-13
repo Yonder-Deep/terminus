@@ -43,12 +43,11 @@ MISSION_DEPTH = .65 # In meters
 FEET_TO_METER = 3.28024
 
 # New data packet for autonomous mode
-AUTONOMOUS_DATA_PACKET_LENGTH  = 5
+AUTONOMOUS_DATA_PACKET_LENGTH  = 4
 ABORTING_INDEX      = 0
 HOME_WP_INDEX       = 1
 DEST_WP_INDEX  	    = 2
 START_BALLAST_INDEX = 3
-SWITCH_MODE_INDEX   = 4
 
 
 # PID Control Constants
@@ -86,77 +85,27 @@ class AUV:
 
     def run(self):
         """
-        Reads motor speeds. This function checks if the correct
-        motor speed  is received and updates motor speeds continuously.
+        Reads radio data. This function checks if the correct
+        data packet length was passed and handles it accordingly.
         """
         try:
             print(self.is_radio_connected_locally())
             while self.is_radio_connected_locally():
                 # String received contains ASCII characters. This line decodes
                 # those characters into motor speed values.
-                data = [ord(x) for x in list(self.radio.readline())]
-
-                # Check for timeout.
-                if len(data) == 0:
-                    print("len(data) == 0")
-                    self.mc.zero_out_motors()
-                    self.calibrate_communication()
-                    self.radio.write(ESC)
-                    continue
-
-                # Indicate that some data has been received.
-                self.radio.write(REC)
-
+                data = self.get_radio_data()
+		
+                # We are in manual mode!
+                if   len(data) == MANUAL_DATA_PACKET_LENGTH:
+                   self.handle_manual_data(data)
+                elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ IS_ABORTING, HOME_WP, NAV_WP, WANTS_BALLAST]
+	           self.handle_autonomous_data(data)
                 
-                
-		if is_manual: 
-                    if len(data) == MANUAL_DATA_PACKET_LENGTH:
-                        # Parse data - remove newline.
-                        data = data[:-1]
-                    
-                        if data[BALLAST_INDEX] == 1:
-                            print("Dude pressed ballasting button")
-                            self.start_ballast_sequence(data)
-                            data[BALLAST_INDEX] = 0
-                            self.radio.write(REC)
-
-                        # Update motor values.
-                        self.mc.update_motor_speeds(data)
-                else: # We are in autonomous mode!
-                    if len(data) == AUTONOMOUS_DATA_PACKET_LENGTH:
-                        data = data[:-1]
-                   
-                        if data[SWITCH_MODE_INDEX]:
-                           is_manual = True
-                        elif data[ABORTING_INDEX]:
-                            coordinates = data[HOME_WP_INDEX].split(",")
-                            coordinates[0] = float(coordinates[0])
-                            coordinates[1] = float(coordinates[1])
-                            self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
-                       elif data[START_BALLAST_INDEX]:
-                            self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
-                       else:
-                           coordinates = data[NAV_WP_INDEX].split(",")
-                           coordinates[0] = float(coordinates[0]
-                           coordinates[1] = float(coordinates[1])
-                           self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
-			 
                 print("Data: " ,data) 
 
-                # Reading from pressure sensor
-                if self.pressure_sensor.read():
-                    self.depth = self.pressure_sensor.depth()
-                
-                # Reading from IMU sensor
-                self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
-                x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
-                self.convert_heading()
-                
-                print("Data: " ,data, end = "  ")
-                print("Depth: ", self.depth, "(meters)", end = "  ")
-                print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
-                print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
-                print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
+                self.print_pressure_data()
+                self.print_imu_data()
+     
                 time.sleep(0.01)
 
         except Exception, e:
@@ -169,17 +118,109 @@ class AUV:
 
             print('Radio disconnected')
     
-    def nav_to_waypoint(self, x, y, radio):
+    def print_pressure_data(self):
+        # Reading from pressure sensor
+        if self.pressure_sensor.read():
+            self.depth = self.pressure_sensor.depth()
+        
+        print("Depth: ", self.depth, "(meters)", end = "  ")
+        print("Depth: ", self.convert_to_feet(self.depth), "(feet)", end = "  ")
+   
+    def print_imu_data(self):
+        # Reading from IMU sensor
+        self.heading, self.pitch, self.roll = self.imu_sensor.read_euler()
+        x_accel, y_accel, z_accel = self.imu_sensor.read_linear_acceleration()
+        self.convert_heading()
+                
+        print("Heading: %f, Roll: %f, Pitch %f" % ( self.heading, self.roll, self.pitch ), end = "  ")
+        print("X Accel: %f, Y Accel: %f, Z Accel: %f" % ( x_accel, y_accel, z_accel ), end = "  ")
+  
+    def get_radio_data(self):
+        # String received contains ASCII characters. This line decodes
+        # those characters into motor speed values.
+	data = [ord(x) for x in list(self.radio.readline())]
+
+        # Check for timeout.
+        if len(data) == 0:
+            print("len(data) == 0")
+            self.mc.zero_out_motors()
+            self.calibrate_communication()
+            self.radio.write(ESC)
+            continue
+
+        # Indicate that some data has been received.
+        self.radio.write(REC)
+        
+        return data;
+
+    def handle_manual_data(self, data):
+        # Parse data - remove newline.
+        data = data[:-1]
+                    
+        if data[BALLAST_INDEX] == 1:
+            print("Dude pressed ballasting button")
+            self.start_ballast_sequence(data)
+            data[BALLAST_INDEX] = 0
+            self.radio.write(REC)
+
+        # Update motor values.
+        self.mc.update_motor_speeds(data)
+
+    def handle_autonomous_data(self, data):
+        data = data[:-1]
+                   
+	if data[ABORTING_INDEX]:
+	    coordinates = data[HOME_WP_INDEX].split(",")
+	    coordinates[0] = float(coordinates[0])
+	    coordinates[1] = float(coordinates[1])
+            self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
+	elif data[START_BALLAST_INDEX]:
+	    self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
+	else:
+	    coordinates = data[NAV_WP_INDEX].split(",")
+	    coordinates[0] = float(coordinates[0]
+            coordinates[1] = float(coordinates[1])
+            self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
+ 
+    def nav_to_waypoint(self, data, x, y, radio):
+        self.original_data = data # If our new data != original_data, we have new
+                                  # instructions coming in to the AUV. So, logically,
+                                  # interupt the current task and parse new data.
+
         # Get the angle from North from our position and the long/lat position (North being up or 0)
         angle_from_north = self.get_angle_from_north(x, y)
-	
         self.rotate_to_heading(angle_from_north)
-        self.forward_loop(x, y)
+        
+        try:
+            # We NEED to check if we want to ABORT/Change Waypoint WHILE 
+            # we are travelling to a waypoint!
+            while self.is_radio_connected_locally():
+                current_data = self.get_radio_data()
+                
+                if   len(current_data) == MANUAL_DATA_PACKET_LENGTH:
+                   self.handle_manual_data(current_data)
+                   return
+                elif len(current_data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ IS_ABORTING, HOME_WP, NAV_WP, WANTS_BALLAST]
+	           if str(original_data) != str(current_data): # IF we recieved a different instruction set...
+                       self.handle_autonomous_data(current_data)
+                       return
+                
+                self.forward_loop(x, y)
+		
+        except Exception, e:
+            # Close serial conenction with local radio that is disconnected.
+            self.radio.close()
+
+            print("Exception caught was: ", e) 
+            # Zero out motors.
+            self.mc.zero_out_motors()
+
+            print('Radio disconnected')
 
     def rotate_to_heading(self, heading): # Heading is the angle from North on a compass.
         pass
         
-    def get_angle_from_north(self, x, y): # X, Y is the long/lat we are travelling to, we know where we are, get angle from 0
+    def get_angle_from_north(self, x, y): # X, Y is the long/lat we are travelling to; we know where we are; now get angle from 0
 	pass
 
     def forward_loop(self, x, y): # Move forward until we are close-enough to x, y

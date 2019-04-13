@@ -102,6 +102,7 @@ class AUV:
                 # We are in manual mode!
                 if   len(data) == MANUAL_DATA_PACKET_LENGTH:     # [ LEFT, RIGHT, FRONT, BACK, BALLAST, CALIBRATE ]
                    self.handle_manual_data(data)
+                   self.radio.write(REC)
                 elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ ABORT, HOME_WP, NAV_WP, BALLAST]
 	           self.handle_autonomous_data(data)
                 
@@ -142,7 +143,8 @@ class AUV:
     def get_radio_data(self):
         # String received contains ASCII characters. This line decodes
         # those characters into motor speed values.
-	data = [ord(x) for x in list(self.radio.readline())]
+        #print("Radio's readline: " + self.radio.readline())
+        data = [ord(x) for x in list(self.radio.readline())]
 
         # Check for timeout.
         if len(data) == 0:
@@ -150,7 +152,6 @@ class AUV:
             self.mc.zero_out_motors()
             self.calibrate_communication()
             self.radio.write(ESC)
-            continue
 
         # Indicate that some data has been received.
         self.radio.write(REC)
@@ -190,7 +191,7 @@ class AUV:
 	    self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
 	else:
 	    coordinates = data[NAV_WP_INDEX].split(",")
-	    coordinates[0] = float(coordinates[0]
+	    coordinates[0] = float(coordinates[0])
             coordinates[1] = float(coordinates[1])
             self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
  

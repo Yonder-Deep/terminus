@@ -149,6 +149,7 @@ class MotorController:
               #  print("Caught error calibrating motors: ", err)
              #   continue
     def calibrate_left(self):
+        print('Calibrating Left Motor')
         self.motors[LEFT_MOTOR_INDEX].calibrate_motor()
 
     def calibrate_right(self):

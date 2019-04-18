@@ -40,12 +40,14 @@ class Motor:
         """
         Calibrates the motor by setting speed values between time intervals.
         """
+        print('Calibrating Motor')
         self.set_speed(0)
-        time.sleep(2)
+     #   time.sleep(2)
         self.set_speed(MAX_SPEED / 2)
-        time.sleep(2)
+        time.sleep(1)
         self.set_speed(0)
-        time.sleep (2)
+        time.sleep (1)
         self.set_speed(0)
-        time.sleep(2)
+        print('Finished Calibrating the Motor')
+     #   time.sleep(2)
    #     time.sleep(1)

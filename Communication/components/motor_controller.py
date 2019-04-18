@@ -6,6 +6,7 @@ from __future__ import print_function
 import pigpio
 from motor import Motor
 import RPi.GPIO as io
+import time
 LEFT_GPIO_PIN   = 4  #18
 RIGHT_GPIO_PIN  = 11 #24
 FRONT_GPIO_PIN  = 18 #4
@@ -38,7 +39,7 @@ class MotorController:
         self.pi = pigpio.pi()
 
         # Motor object definitions.
-        self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN]#, FRONT_GPIO_PIN, BACK_GPIO_PIN]
+        self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN, FRONT_GPIO_PIN, BACK_GPIO_PIN]
         self.pi_pins = [LEFT_PI_PIN, 23, 12, 18]
 
         self.motors = [Motor(gpio_pin=pin, pi=self.pi) for pin in self.motor_pins]
@@ -61,15 +62,16 @@ class MotorController:
         self.left_speed = data[LEFT_MOTOR_INDEX]
         self.right_speed = data[RIGHT_MOTOR_INDEX]
         self.front_speed = data[FRONT_MOTOR_INDEX]
-        self.back_speed = data[FRONT_MOTOR_INDEX]
+        self.back_speed = data[FRONT_MOTOR_INDEX] #This is grabbing speed from the DATA packet which is index 2
 
+        print("motors is: ", self.motors)
         # Set motor speed
         self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
   #      print("Setting Right Motor to ", data[RIGHT_MOTOR_INDEX])
         self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
    #     print("Setting Front and Back Motor to ", data[FRONT_MOTOR_INDEX])
         self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
-        self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
+        self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed) #This is setting the individual motor speed so the index will be different
 
     def pid_motor(self, pid_feedback):
         """
@@ -145,10 +147,12 @@ class MotorController:
             print("Calibrating motor ", ct)
             #try:
             motor.calibrate_motor()
+            time.sleep(2)
             #except AttributeError as err:
               #  print("Caught error calibrating motors: ", err)
              #   continue
     def calibrate_left(self):
+        print('Calibrating Left Motor')
         self.motors[LEFT_MOTOR_INDEX].calibrate_motor()
 
     def calibrate_right(self):

@@ -55,6 +55,7 @@ class BaseStation:
         self.debug = debug
         self.esc_connected = False
         self.cal_flag = 9
+        self.radio_timer = []
 
     def set_main(self, Main):
         self.main = Main 
@@ -141,18 +142,20 @@ class BaseStation:
         '''
         print("inside run") 
         #Check ESC Connection Status 
-#        data = self.radio.readline()
- #       while data != "ESC\n":
-  #          print("isnide esc while loop")
-   #         data = self.radio.readline()
-    #        self.root.update_idletasks()
-     #       self.root.update()
+       # data = self.radio.readline()
+       # while data != "ESC\n":
+       #     print("isnide esc while loop")
+        #    data = self.radio.readline()
+         #   self.root.update_idletasks()
+          #  self.root.update()
         
         self.esc_connected = True
         
         #Start Control Loop
         #i = 1
         self.radio.write(chr(speed_calibration))
+        
+        curr_time = time.time()
         while self.esc_connected:
             #print("counter: ", i)
             #Get packet
@@ -168,15 +171,22 @@ class BaseStation:
             
         
             if is_Manual:
+                delta_time = time.time() - curr_time
+                self.radio_timer.append( delta_time )
                 self.radio.write(self.speed_f)
+                curr_time = time.time()
+                
+
+            
+            self.cal_flag = 9 # reset motor calibrate flag
             #else:
                 # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
                 #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
 
  	    #print("self.speed_f[3] is: ", self.speed_f[3])
-	    #if ord(self.speed_f[3]) == 1:
-		#print("entering ballast state")
-		#self.enter_ballast_state() 
+	    if ord(self.speed_f[3]) == 1:
+		    print("entering ballast state")
+		    self.enter_ballast_state() 
 		#print("Finished ballasting")
 		#self.radio.write(chr(speed_callibration))
             
@@ -194,19 +204,21 @@ class BaseStation:
                 while data != "ESC\n":
                     data = self.radio.readline()
             
+          #  self.radio.write(chr(speed_calibration))
             time.sleep(0.08)
             self.root.update_idletasks()
             self.root.update()
             
 
     def enter_ballast_state(self): 
-		reconnected_after_ballasting = False
-		while not reconnected_after_ballasting:
-			data = self.radio.readline()
-			if data == "DONE\n":
-				print("data recieved is done, exiting ballasting")
-				reconnected_after_ballasting = True
-		return
+        print(self.radio_timer)
+        reconnected_after_ballasting = False
+        while not reconnected_after_ballasting:
+            data = self.radio.readline()
+            if data == "DONE\n":
+                print("data recieved is done, exiting ballasting")
+                reconnected_after_ballasting = True
+	    return
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
 

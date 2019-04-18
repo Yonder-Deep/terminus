@@ -216,7 +216,8 @@ class Map:
                                ])
         
         prompt_submit.grid(row = 3, column = 0, padx=5, pady=5)
-        prompt_window.mainloop();
+ #       prompt_window.mainloop();
+        print("returning from waypoint mainloop")
 
     def add_auv_data(self, x=0, y=0):
         self.main.log("Adding AUV data at: ("+str(x)+", "+str(y)+").")

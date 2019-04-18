@@ -6,6 +6,7 @@ from __future__ import print_function
 import sys
 import os
 import time
+import atexit
 
 # Sets the PYTHONPATH to include the components.
 split_path = os.path.abspath(__file__).split('/')
@@ -39,7 +40,7 @@ CAL = 'CAL\n'
 MANUAL_DATA_PACKET_LENGTH = 6
 IS_DEBUG_MODE   = True
 BALLAST_INDEX   = 3
-CALIBRATE_INDEX = 5
+CALIBRATE_INDEX = 4
 MISSION_DEPTH   = .65 # In meters
 FEET_TO_METER   = 3.28024
 LEFT_CALIBRATE  = 0
@@ -49,8 +50,8 @@ BACK_CALIBRATE  = 3
 ALL_CALIBRATE   = 4
 
 # New data packet for autonomous mode  -   [ TRAVEL_WP, BALLAST ]
-AUTONOMOUS_DATA_PACKET_LENGTH  = 4
-DEST_WP_INDEX  	    = 0
+AUTONOMOUS_DATA_PACKET_LENGTH  = 3
+NAV_WP_INDEX  	    = 0
 START_BALLAST_INDEX = 1
 
 
@@ -88,6 +89,8 @@ class AUV:
 
 
     def run(self):
+        last_packet = time.time()
+        self.delta_times = [] 
         """
         Reads radio data. This function checks if the correct
         data packet length was passed and handles it accordingly.
@@ -100,17 +103,24 @@ class AUV:
                 data = self.get_radio_data()
 		
                 # We are in manual mode!
-                if   len(data) == MANUAL_DATA_PACKET_LENGTH:     # [ LEFT, RIGHT, FRONT, BACK, BALLAST, CALIBRATE ]
-                   self.handle_manual_data(data)
-                   self.radio.write(REC)
-                elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ ABORT, HOME_WP, NAV_WP, BALLAST]
-	           self.handle_autonomous_data(data)
+                if   len(data) == MANUAL_DATA_PACKET_LENGTH:     # [ LEFT, RIGHT, FRONT/BACK,  BALLAST, CALIBRATE ]
+                    self.delta_times.append(time.time() - last_packet)
+                    last_packet = time.time() 
+                    
+                    self.handle_manual_data(data)
+                elif len(data) == AUTONOMOUS_DATA_PACKET_LENGTH: # [ NAV_WP, BALLAST]
+                    self.delta_times.append(time.time() - last_packet)
+                    last_packet = time.time() 
+
+                    self.handle_autonomous_data(data)
                 
                 print("Data: " ,data) 
 
-                self.print_pressure_data()
-                self.print_imu_data()
+               # self.print_pressure_data()
+               # self.print_imu_data()
      
+                self.radio.write(REC)
+
                 time.sleep(0.01)
 
         except Exception, e:
@@ -122,7 +132,10 @@ class AUV:
             self.mc.zero_out_motors()
 
             print('Radio disconnected')
-    
+   
+    def on_exit(self):
+        print(self.delta_times)
+
     def print_pressure_data(self):
         # Reading from pressure sensor
         if self.pressure_sensor.read():
@@ -152,6 +165,7 @@ class AUV:
             self.mc.zero_out_motors()
             self.calibrate_communication()
             self.radio.write(ESC)
+            self.radio.write(ESC)
 
         # Indicate that some data has been received.
         self.radio.write(REC)
@@ -170,6 +184,7 @@ class AUV:
 
         # Begin parsing which motor(s) we want to calibrate.
         MOTOR_TO_CALIBRATE = data[CALIBRATE_INDEX]
+        print('motor to calibrate is: ', MOTOR_TO_CALIBRATE)
         if MOTOR_TO_CALIBRATE == LEFT_CALIBRATE:
             self.mc.calibrate_left()
         if MOTOR_TO_CALIBRATE == RIGHT_CALIBRATE:
@@ -182,7 +197,9 @@ class AUV:
             self.mc.calibrate_motors()
         
         # Update motor values.
+        print('updating motor speeds')
         self.mc.update_motor_speeds(data)
+        print('finished updating motor speeds') 
 
     def handle_autonomous_data(self, data):
         data = data[:-1]
@@ -190,8 +207,9 @@ class AUV:
 	if data[START_BALLAST_INDEX]:
 	    self.start_ballast_sequence(1) # Number 1 for the data object in start_balance_sequence 
 	else:
-	    coordinates = data[NAV_WP_INDEX].split(",")
-	    coordinates[0] = float(coordinates[0])
+            coordinates = data[NAV_WP_INDEX].split(",") # Coordinates are in the format:    X,Y
+	    
+            coordinates[0] = float(coordinates[0])
             coordinates[1] = float(coordinates[1])
             self.nav_to_waypoint(coordinates[0], coordinates[1], radio)
  
@@ -210,7 +228,7 @@ class AUV:
             while self.is_radio_connected_locally():
                 current_data = self.get_radio_data()
                
-                # New data? 
+                # Recieved a manual data packet? Switch to manual mode! 
                 if   len(current_data) == MANUAL_DATA_PACKET_LENGTH:
                    self.handle_manual_data(current_data)
                    return
@@ -377,6 +395,8 @@ def main():
     # COMM CHECK
     auv.calibrate_communication()
     # auv.calibrate_motors()
+    
+    atexit.register(auv.on_exit)
 
     auv.run()
 

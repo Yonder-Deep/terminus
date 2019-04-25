@@ -5,7 +5,8 @@ import os
 import sys
 
 import state_Connect
-import state_WaitForAction
+import state_InitSensors
+import state_ReadRadio
 
 # Configure Logging
 log_file_name = "mylog"
@@ -29,7 +30,9 @@ logger.addHandler(ch)
 logger.addHandler(fh)
 
 AUV_STATES = {
-    'INIT': (state_Connect.Connect, 'CONNECT')
+    'CONNECT': (state_Connect.Connect, 'INIT'),
+    'INIT': (state_InitSensors.InitSensors, 'READ'),
+    'READ': (state_ReadRadio.ReadRadio, 'WAIT')
 }
 
 
@@ -60,4 +63,5 @@ if __name__ == '__main__':
     try:
         auv.run_forever()
     except Exception as e:
-        logger.error("AUV_Root returns uncault Error!!", exc_info=True)
+        # TODO: Clean up motors and stuff
+        logger.error("AUV_Root returns uncaught Error!!", exc_info=True)

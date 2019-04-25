@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
-import state_Connect
-import state_WaitForAction
+
 
 class State:
     __metaclass__ = ABCMeta

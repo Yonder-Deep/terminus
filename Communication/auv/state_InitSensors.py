@@ -1,4 +1,13 @@
-from state import State
+import sys
+import os
+
+split_path = os.path.abspath(__file__).split('/')
+split_path_sensors = split_path[0:len(split_path) - 3]
+pressure_sensor_path = "/".join(split_path_sensors) + "/Sensor"
+imu_sensor_path = "/".join(split_path_sensors) + "/Sensor/Adafruit_Python_BNO055/Adafruit_BNO055"
+sys.path.append(pressure_sensor_path)
+sys.path.append(imu_sensor_path)
+
 import ms5837
 
 # This serial code is sent when radio needs to reconnected to base station.
@@ -8,6 +17,7 @@ REC = 'REC\n'
 # This serial code is received when a connection is established during calibrate_communication
 # and is sent after communication has been established.
 CAL = 'CAL\n'
+
 
 class InitSensors(State):
     def __init__(self, auv):

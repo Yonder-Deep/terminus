@@ -23,13 +23,20 @@ class Radio:
 
         message: A string message that is sent over seral connection.
         """
-        self.ser.write(message)
+        try:
+             self.ser.write(message)
+             return 1
+        except Exception as e:
+             return -1
 
     def readline(self):
         """
         Returns a string from the serial connection.
         """
-        return self.ser.readline()
+        try:
+             return self.ser.readline()
+        except Exception as e:
+             return -1
 
     def isOpen(self):
         """

@@ -59,6 +59,67 @@ class BaseStation:
         '''
 
         # Construct joystick and check that the driver/controller are working.
+#version 1.0.1
+
+'''
+This class manages the serial connection between the 
+AUV and Base Station along with sending controller 
+commands.
+'''
+import sys
+import os
+
+# Sets the PYTHONPATH to include the components.
+split_path = os.path.abspath(__file__).split('/')
+split_path = split_path[0:len(split_path) - 2]
+components_path = "/".join(split_path) + "/components"
+sys.path.append(components_path)
+
+#import main 
+import serial
+import time
+import math
+import argparse
+from nav import NavController
+from nav import xbox
+from radio import Radio
+
+SPEED_CALIBRATION = 10
+IS_MANUAL = True
+RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
+NO_CALIBRATION = 9
+CAL = 'CAL\n'
+DONE = "DONE\n"
+DELAY = 0.08
+#Hey we're using spaces
+class BaseStation:
+    def __init__(self, debug=False):
+
+        '''
+        Initialize Serial Port and Class Variables
+
+        debug: debugging flag
+        '''
+	# Jack Silberman's radio
+	# Yonder's radio
+        self.radio = Radio(RADIO_PATH)
+        self.data_packet = []       
+        self.joy = None 	
+        self.connected_to_auv = False
+        self.navController = None
+        self.debug = debug
+        self.cal_flag = NO_CALIBRATION
+        self.radio_timer = []
+
+    def set_main(self, Main):
+        self.main = Main 
+
+    def calibrate_controller(self):
+        '''
+        Instantiates a new Xbox Controller Instance and NavigationController
+        '''
+
+        # Construct joystick and check that the driver/controller are working.
         self.joy = None
         self.main.log("Attempting to connect xbox controller")
         while self.joy is None:
@@ -72,13 +133,12 @@ class BaseStation:
         #Instantiate New NavController With Joystick
         self.navController = NavController(self.joy, self.debug)
         
-        self.main.log("Controller is connected\n")
+        self.main.log("Controller is connected")
 
     def calibrate_communication(self):
         '''
         Ensure communication between AUV and Base Station
         '''
-        esc_connected = False
         
         # Flush the serial connection.
         self.radio.flush()
@@ -88,17 +148,26 @@ class BaseStation:
 
         # Wait until connection is established.
         while not self.connected_to_auv:
-            #Send Calibration Signal To AUV
-            self.radio.write(CAL)
-            # Await response from AUV. Times out after 1 second.
-            self.connected_to_auv = (self.radio.readline() == CAL)
-            if not self.connected_to_auv:
-                self.main.log("Connection timed out, trying again...\n")
+            # Send Calibration Signal To AUV
+            if self.radio.write(CAL) == -1:
+                self.main.log("Radios have been physically disconnected. Check USB connection.")
+           
+            # Attempt to read from radio
+            line = self.radio.readline()
+            
+            # If we got an error (returned 0)
+            if line == -1:
+                self.main.log("Radios have been physically disconnected. Check USB connection.")
+            else:
+                self.connected_to_auv = (line == CAL)
+                if not self.connected_to_auv:
+                    self.main.log("Connection timed out, trying again...")
+            
             self.main.update()
 
     	self.radio.flush()
         self.main.log("Connection established with AUV.")
-
+	self.main.comms_status_string.set("Comms Status: Connected")
     def set_calibrate_flag(self, cal_flag):
         self.cal_flag = cal_flag
 
@@ -170,4 +239,4 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
+     main()

@@ -125,9 +125,9 @@ class Main:
 
     def init_log_frame(self):
         self.log_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 700, bd = 1, relief = SUNKEN )
-        self.log_frame.pack( fill = BOTH, padx = PADX, pady = PADY, side = LEFT, expand = NO)
+        self.log_frame.pack( fill = BOTH, padx = PADX, pady = PADY, side = LEFT, expand = YES)
         self.log_frame.pack_propagate(0)
-        self.console = Text( self.log_frame, font = (FONT, BUTTON_SIZE), state = DISABLED ) 
+        self.console = Text( self.log_frame, font = (FONT, BUTTON_SIZE), state = DISABLED, width = 700) 
 
         self.scrollbar = Scrollbar(self.log_frame)
         self.console.configure( yscrollcommand = self.scrollbar.set ) 
@@ -142,7 +142,7 @@ class Main:
 	        
     def init_calibrate_frame(self): 
         self.calibrate_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 350, bd = 1, relief = SUNKEN)
-        self.calibrate_frame.pack( fill = Y, padx = PADX, pady = PADY, side = LEFT, expand = YES)
+        self.calibrate_frame.pack( fill = Y, padx = PADX, pady = PADY, side = LEFT, expand = NO)
         self.calibrate_frame.pack_propagate(0)
 
         self.calibrate_label = Label(self.calibrate_frame, text = "Motor Calibration", takefocus = False, font = (FONT, HEADING_SIZE))
@@ -231,6 +231,9 @@ class Main:
         self.map.on_close()
         self.master.destroy()
         sys.exit()
+    def update(self):
+	self.master.update_idletasks()
+	self.master.update()
 
 # Define the window object.
 root = Tk()
@@ -247,7 +250,7 @@ BUTTON_SIZE  = int(BUTTON_SIZE  / multiplier)
 STATUS_SIZE  = int(STATUS_SIZE  / multiplier)
 # End fixing HiDPI-scaling of fonts.
  
-bs = BaseStation(root)
+bs = BaseStation()
 # Create the main window.
 Main = Main(root, bs)
 bs.set_main( Main )

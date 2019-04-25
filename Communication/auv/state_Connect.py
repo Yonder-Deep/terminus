@@ -2,7 +2,7 @@ from state import State
 
 
 class Connect(State):
-    def __init__(self):
+    def __init__(self, auv):
         print('Waiting for Radio Connection')
 
     def handle(self, auv):

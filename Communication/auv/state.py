@@ -6,7 +6,7 @@ class State:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self, auv):
         raise NotImplementedError('State must override method __init__!')
 
     @abstractmethod

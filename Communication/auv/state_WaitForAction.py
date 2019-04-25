@@ -2,7 +2,7 @@ from state import State
 
 
 class WaitForAction(State):
-    def __init__(self):
+    def __init__(self, auv):
         print('Waiting for GUI command')
 
     def handle(self, auv):

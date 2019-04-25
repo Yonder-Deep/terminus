@@ -122,9 +122,9 @@ class BaseStation:
                 # Await response from AUV. Times out after 1 second.
             self.connected_to_auv = (self.radio.readline() == 'CAL\n')
             if not self.connected_to_auv:
-                print("self.radio.readline(): ", self.radio.readline())
+                #print("self.radio.readline(): ", self.radio.readline())
                 print("self.connected_to_auv: ", self.connected_to_auv)
-                self.main.log("Connection timed out, please try again...\n")
+                self.main.log("Connection timed out, trying again...\n")
 
             self.root.update_idletasks()
             self.root.update()	
@@ -156,7 +156,7 @@ class BaseStation:
         self.radio.write(chr(speed_calibration))
         
         curr_time = time.time()
-        while self.esc_connected:
+        while self.connected_to_auv:
             #print("counter: ", i)
             #Get packet
             print("grabbing speed packet")
@@ -195,14 +195,11 @@ class BaseStation:
             
                 self.connected_to_auv = False
             
-                print("WARNING - AUV disconnected")
+                print("WARNING - AUV disconnected. Attempting to reconnect.")
             
                 self.calibrate_communication()
             
                 data = self.radio.readline()
-                
-                while data != "ESC\n":
-                    data = self.radio.readline()
             
           #  self.radio.write(chr(speed_calibration))
             time.sleep(0.08)

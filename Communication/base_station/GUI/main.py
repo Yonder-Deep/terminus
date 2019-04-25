@@ -113,14 +113,14 @@ class Main:
         self.comms_status_string.set("Comms Status: Not connected")
         self.comms_status.place(relx = 0.05, rely = 0.70, anchor = 'sw')
 
-        self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
-                                               padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
-        self.calibrate_xbox_button.pack()
-        self.calibrate_xbox_button.place(relx = 0.05, rely = 0.80);
-        self.establish_comm_button           = Button(self.status_frame, text = "Connect to AUV", takefocus = False, width = BUTTON_WIDTH, height = BUTTON_HEIGHT,
-                                               padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_communication )
-        self.establish_comm_button.pack() 
-        self.establish_comm_button.place(relx = 0.05, rely = 0.90); 
+        #self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
+        #                                      padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
+        #self.calibrate_xbox_button.pack()
+        #self.calibrate_xbox_button.place(relx = 0.05, rely = 0.80);
+        #self.establish_comm_button           = Button(self.status_frame, text = "Connect to AUV", takefocus = False, width = BUTTON_WIDTH, height = BUTTON_HEIGHT,
+        #                                       padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_communication )
+        #self.establish_comm_button.pack() 
+        #self.establish_comm_button.place(relx = 0.05, rely = 0.90); 
 
 
     def init_log_frame(self):
@@ -256,15 +256,13 @@ root.protocol("WM_DELETE_WINDOW", Main.on_closing)
 #bs.calibrate_controller() 
 root.update_idletasks()
 root.update()
-controller_connected = False
 radio_connected = False
-while not controller_connected or not radio_connected:
-    if bs.joy is not None:
-        controller_connected = True
-    if bs.connected_to_auv:
-        radio_connected = True
-    root.update_idletasks()
-    root.update() 
+while bs.joy is None:
+    bs.calibrate_controller()
+
+while not bs.connected_to_auv:
+    bs.calibrate_communication()
+    
 print("controller connected, starting run()")
 bs.run()
 #root.mainloop()

@@ -1,14 +1,26 @@
+from state import State
 import sys
 import os
 
+# Sets the PYTHONPATH to include the components.
 split_path = os.path.abspath(__file__).split('/')
+split_path_communication = split_path[0:len(split_path) - 2]
 split_path_sensors = split_path[0:len(split_path) - 3]
+
+components_path = "/".join(split_path_communication) + "/components"
 pressure_sensor_path = "/".join(split_path_sensors) + "/Sensor"
 imu_sensor_path = "/".join(split_path_sensors) + "/Sensor/Adafruit_Python_BNO055/Adafruit_BNO055"
+
+sys.path.append(components_path)
 sys.path.append(pressure_sensor_path)
 sys.path.append(imu_sensor_path)
 
+
+
+from radio import Radio
 import ms5837
+import BNO055
+METER_TO_FEET = 3.28024
 
 # This serial code is sent when radio needs to reconnected to base station.
 ESC = 'ESC\n'
@@ -22,6 +34,9 @@ CAL = 'CAL\n'
 class InitSensors(State):
     def __init__(self, auv):
         print('Initializing sensors')
+        auv.pressure_sensor = ms5837.MS5837_30BA()
+        auv.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
+        auv.radio = Radio('/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0')
         self.calibrate_pressure_sensor(auv)
         self.calibrate_imu_sensor(auv)
         self.calibrate_communication(auv)
@@ -83,7 +98,7 @@ class InitSensors(State):
         auv.pressure_sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
         auv.depth = auv.pressure_sensor.depth()
         print("Current depth is ", auv.pressure_sensor.depth(), "(meters)")
-        print("Current depth is ", auv.convert_to_feet(auv.depth), "(feet)")
+        print("Current depth is ", auv.depth * METER_TO_FEET, "(feet)")
 
     def calibrate_imu_sensor(self, auv):
         sensor_connected = False

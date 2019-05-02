@@ -25,6 +25,15 @@ class RadioManager():
             self.radio = Radio(
                 '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0')
 
+    def is_open(self):
+        return self.radio.isOpen()
+
+    def read(self):
+        if self.radio.in_waiting():
+            return self.radio.readline()
+        else:
+            return None
+
     def calibrate_communication(self):
         """
         Continuously reads strings until CAL code has been received from base station.
@@ -60,6 +69,9 @@ class FakeRadio(Radio):
             return CAL
         else:
             print("<<" + "FakeMessage")
+
+    def in_waiting(self):
+        return 0
 
     def isOpen(self):
         return self.is_open

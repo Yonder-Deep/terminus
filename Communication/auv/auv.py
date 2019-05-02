@@ -34,7 +34,7 @@ AUV_STATES = {
     'CONNECT': (state_Connect.Connect, 'INIT'),
     'INIT': (state_InitSensors.InitSensors, 'READ'),
     'READ': (state_ReadRadio.ReadRadio, 'WAIT'),
-    'WAIT': (state_WaitForAction, 'WAIT')
+    'WAIT': (state_WaitForAction.WaitForAction, 'WAIT')
 }
 
 
@@ -42,7 +42,7 @@ class AUV():
     def __init__(self):
         logger.debug("AUV Initializing")
         self.states = dict()
-        self.next_state = {'name': 'INIT'}
+        self.next_state = {'next_state': 'INIT'}
         self.sensors = None
         logger.info("AUV Started")
 
@@ -50,14 +50,16 @@ class AUV():
         assert adding_state not in self.states.keys(), 'Cannot add ' + adding_state.get_state_name() + 'that already exist in state list!'
         assert adding_state in AUV_STATES.keys(), 'State ' + adding_state + ' not found!'
         self.states[adding_state] = AUV_STATES[adding_state][0](self)
-        self.next_state['name'] = AUV_STATES[adding_state][1]
+        self.next_state['next_state'] = AUV_STATES[adding_state][1]
 
     def run_forever(self):
         while True:
-            if self.next_state['name'] not in self.states.keys():
-                self.add_state(self.next_state['name'])
+            if self.next_state['next_state'] not in self.states.keys():
+                logger.debug("Initializing state - " + self.next_state['next_state'])
+                self.add_state(self.next_state['next_state'])
             else:
-                self.next_state = self.states[self.next_state['name']].handle(self)
+                logger.debug("Going to state - " + self.next_state['next_state'])
+                self.next_state = self.states[self.next_state['next_state']].handle(self)
 
 
 if __name__ == '__main__':

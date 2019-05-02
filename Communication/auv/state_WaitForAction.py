@@ -6,7 +6,10 @@ class WaitForAction(State):
         print('Waiting for GUI command')
 
     def handle(self, auv):
-        raise NotImplementedError()
+        print('Waiting for action.')
+        return {'last_state': 'WAIT',
+                'next_state': 'WAIT',
+                'data': dict()}
 
     def get_state_name(self):
         return 'INIT'

@@ -49,13 +49,17 @@ class RadioManager():
 
 class FakeRadio(Radio):
     def __init__(self):
-        self.is_open = True;
+        self.is_open = False
 
     def write(self, message):
         print(">>" + message)
 
     def readline(self):
-        print("<<" + "FakeMessage")
+        if not self.is_open:
+            self.is_open = True
+            return CAL
+        else:
+            print("<<" + "FakeMessage")
 
     def isOpen(self):
         return self.is_open
@@ -65,3 +69,6 @@ class FakeRadio(Radio):
 
     def close(self):
         self.is_open = False
+
+    def calibrate_communication(self):
+        print("Fake Radio calibrated!")

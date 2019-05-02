@@ -15,11 +15,10 @@ sys.path.append(components_path)
 sys.path.append(pressure_sensor_path)
 sys.path.append(imu_sensor_path)
 
-
-
-from radio import Radio
+from radio_manager import *
 import ms5837
 import BNO055
+
 METER_TO_FEET = 3.28024
 
 # This serial code is sent when radio needs to reconnected to base station.
@@ -36,10 +35,10 @@ class InitSensors(State):
         print('Initializing sensors')
         auv.pressure_sensor = ms5837.MS5837_30BA()
         auv.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
-        auv.radio = Radio('/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0')
+        auv.radio = RadioManager(test_mode=True)  # TODO: Change to False for real radio
         self.calibrate_pressure_sensor(auv)
         self.calibrate_imu_sensor(auv)
-        self.calibrate_communication(auv)
+        auv.radio.calibrate_communication()
         # self.calibrate_motors(auv)
 
     def handle(self, auv):
@@ -60,29 +59,7 @@ class InitSensors(State):
 
         print('Finished calibrating ESC')
 
-    def calibrate_communication(self, auv):
-        """
-        Continuously reads strings until CAL code has been received from base station.
-        Once received successfully , CAL code is written back to the base station.
-        """
-        auv.radio.flush()
-
-        # Wait until signal received from base station.
-        print("Waiting For Data:")
-
-        data = auv.radio.readline()
-        while data != CAL:
-            data = auv.radio.readline()
-
-        print('sending_cal')
-
-        # Send signal to base station.
-        auv.radio.write(CAL)
-
-        print("Done calibrating AUV.")
-
     def calibrate_pressure_sensor(self, auv):
-
         pressure_sensor_init = False
         while not pressure_sensor_init:
             try:

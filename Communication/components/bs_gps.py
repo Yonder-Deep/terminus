@@ -11,5 +11,6 @@ class GpsPoller(threading.Thread):
  
   def run(self):
     while self.running:
-      self.gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
- 
+        print("Waiting for gpsd next")
+        self.gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
+        print("Finished gpsd next")

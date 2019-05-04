@@ -90,20 +90,21 @@ class BaseStation:
         # Wait until connection is established.
         while not self.connected_to_auv:
             # Send Calibration Signal To AUV
-            if self.radio.write(CAL) == -1:
-                self.main.log("Radios have been physically disconnected. Check USB connection.")
-           
+#            if self.radio.write(CAL) == -1:
+ #               self.main.log("Radios have been physically disconnected. Check USB connection.")
+          	
+            self.radio.write(CAL) 
             # Attempt to read from radio
             line = self.radio.readline()
-            
+            print("line read is: " , line)
             # If we got an error (returned 0)
-            if line == -1:
-                self.main.log("Radios have been physically disconnected. Check USB connection.")
-            else:
-                self.connected_to_auv = (line == CAL)
-                if not self.connected_to_auv:
-                    self.main.log("Connection timed out, trying again...")
-            
+  #          if line == -1:
+               # self.main.log("Radios have been physically disconnected. Check USB connection.")
+   #         else:
+            self.connected_to_auv = (line == CAL)
+	    if not self.connected_to_auv:
+	        self.main.log("Connection timed out, trying again...")
+    
             self.main.update()
 
     	self.radio.flush()
@@ -124,7 +125,7 @@ class BaseStation:
 
             #while self.connected_to_auv:
             while True:
-                print("GPS: {}".format(self.gpsp.gpsd.fix.latitude)) 
+                self.main.log("GPS: {}".format(self.gpsp.gpsd.fix.latitude)) 
 
                 #Get pa0cket
                 self.data_packet = self.navController.getPacket()
@@ -165,8 +166,8 @@ class BaseStation:
         
         except (KeyboardInterrupt, SystemExit, Exception): #when you press ctrl+c
             print "\nKilling Thread..."
-            gpsp.running = False
-            gpsp.join() # wait for the thread to finish what it's doing
+            self.gpsp.running = False
+            self.gpsp.join() # wait for the thread to finish what it's doing
         print("Done.\nExiting.")
             
 

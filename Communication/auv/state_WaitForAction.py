@@ -7,7 +7,7 @@ class WaitForAction(State):
 
     def handle(self, auv):
         print('Waiting for action.')
-        return {'last_state': 'WAIT',
+        return {'last_state': auv.next_state['last_state'],
                 'next_state': 'WAIT',
                 'data': dict()}
 

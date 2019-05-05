@@ -1,5 +1,3 @@
-import state
-import sensors
 import logging
 import os
 import sys
@@ -31,8 +29,8 @@ logger.addHandler(ch)
 logger.addHandler(fh)
 
 AUV_STATES = {
-    'CONNECT': (state_Connect.Connect, 'INIT'),
-    'INIT': (state_InitSensors.InitSensors, 'READ'),
+    'INIT': (state_InitSensors.InitSensors, 'CONNECT'),
+    'CONNECT': (state_Connect.Connect, 'READ'),
     'READ': (state_ReadRadio.ReadRadio, 'WAIT'),
     'WAIT': (state_WaitForAction.WaitForAction, 'READ')
 }
@@ -47,8 +45,10 @@ class AUV():
         self.next_state = {'last_state': 'INIT', 'next_state': 'INIT'}
         self.sensors = None
         logger.info("AUV Started")
+        self.run_state('INIT')
 
-    def next_state_is_read_radio(self):
+    @staticmethod
+    def next_state_is_read_radio():
         """ Generator that yields an on off for radio"""
         read = False
         while True:
@@ -65,9 +65,9 @@ class AUV():
         read_radio = self.next_state_is_read_radio()
         while True:
             if next(read_radio):
-                self.run_state(self.next_state['next_state'])
-            else:
                 self.run_state('READ')
+            else:
+                self.run_state(self.next_state['next_state'])
 
     def run_state(self, state_name):
         if state_name not in self.states.keys():

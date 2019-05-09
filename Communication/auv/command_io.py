@@ -1,12 +1,14 @@
 import json
 import command_validate
+import traceback
+import collections
 
-CMD_LIST = {'CAL': command_validate.cal_checker,
-            'MAN': command_validate.man_checker,
-            'BAL': command_validate.bal_checker,
-            'NAV': command_validate.nav_checker,
-            'ALIVE': command_validate.alive_checker,
-            'STATUS': command_validate.status_checker}
+CMD_VALIDATE = {'CAL': command_validate.cal_checker,
+                'MAN': command_validate.man_checker,
+                'BAL': command_validate.bal_checker,
+                'NAV': command_validate.nav_checker,
+                'ALIVE': command_validate.alive_checker,
+                'STATUS': command_validate.status_checker}
 
 
 def send_calibrate(l=True, r=True, f=True, b=True):
@@ -46,8 +48,8 @@ def send_alive():
     send_dict(packet)
 
 
-def send_status(current_lat, current_lon, current_state): # For AUV only
-    packet = {'cmd': 'BAL',
+def send_status(current_lat, current_lon, current_state):  # For AUV only
+    packet = {'cmd': 'STATUS',
               'lat': current_lat,
               'lon': current_lon,
               'state': current_state}
@@ -55,19 +57,37 @@ def send_status(current_lat, current_lon, current_state): # For AUV only
 
 
 def send_dict(a_dict):
+    print(encode_json(a_dict))
+
+
+def encode_json(a_dict):
     raw = json.dumps(a_dict)
-    assert decode(raw)
-    print(raw)
+    assert decode_json(raw)
+    return a_dict
 
 
-def decode(a_json_str):
-    cmd_dict = json.load(a_json_str)
+def decode_json(a_json_str):
+    print(a_json_str)
+    cmd_dict = json.loads(a_json_str)
+    cmd_dict = dict_unicode_to_string(cmd_dict)
     try:
-        assert isinstance(cmd_dict, dict)
-        assert 'cmd' in cmd_dict.keys()
-        assert cmd_dict['cmd'] in CMD_LIST.keys()
-        assert CMD_LIST[cmd_dict['cmd']](cmd_dict)  # Call particular command's validator
+        assert isinstance(cmd_dict, dict), "Json decoder returns type: " + str(type(cmd_dict))
+        assert 'cmd' in cmd_dict.keys(), "Json decoded dict doesn't contain 'cmd': " + str(cmd_dict)
+        assert cmd_dict['cmd'] in CMD_VALIDATE.keys()
+        CMD_VALIDATE[cmd_dict['cmd']](cmd_dict)  # Call particular command's validator
+        return cmd_dict
 
     except AssertionError:
         # TODO: Dump log!
-        print("INVALID COMMAND")
+        traceback.print_exc()
+
+
+def dict_unicode_to_string(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(dict_unicode_to_string, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(dict_unicode_to_string, data))
+    else:
+        return data

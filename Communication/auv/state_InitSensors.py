@@ -35,7 +35,7 @@ class InitSensors(State):
         print('Initializing sensors')
         auv.pressure_sensor = ms5837.MS5837_30BA()
         auv.imu_sensor = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
-        auv.radio = RadioManager(test_mode=True)  # TODO: Change to False for real radio
+        auv.radio = RadioManager(test_mode=False)  # TODO: Change to False for real radio
         self.calibrate_pressure_sensor(auv)
         self.calibrate_imu_sensor(auv)
         auv.radio.calibrate_communication()

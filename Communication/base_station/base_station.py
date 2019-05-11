@@ -19,8 +19,8 @@ import serial
 import time
 import math
 import argparse
-from nav import NavController
 from nav import xbox
+from nav import NavController
 from radio import Radio
 from bs_gps import *
 
@@ -29,6 +29,7 @@ IS_MANUAL = True
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 NO_CALIBRATION = 9
 CAL = 'CAL\n'
+REC = 'REC\n'
 DONE = "DONE\n"
 DELAY = 0.08
 #Hey we're using spaces
@@ -42,6 +43,7 @@ class BaseStation:
         '''
 	# Jack Silberman's radio
 	# Yonder's radio
+        #self.test_dict = {'A':10}
         self.radio = Radio(RADIO_PATH)
         self.data_packet = []       
         self.joy = None 	
@@ -51,6 +53,11 @@ class BaseStation:
         self.cal_flag = NO_CALIBRATION
         self.radio_timer = []
         self.gpsp = GpsPoller() # create the thread
+        self.ballast_depth = 0
+        self.button_cb = {'MAN':self.manual_control, 'BAL':self.ballast}
+
+        
+       # self.test = json.dumps(self.test_dict)
 
     def set_main(self, Main):
         self.main = Main 
@@ -72,7 +79,7 @@ class BaseStation:
         self.main.log("Xbox controller is connected")                
 
         #Instantiate New NavController With Joystick
-        self.navController = NavController(self.joy, self.debug)
+        self.navController = NavController(self.joy, self.button_cb, self.debug)
         
         self.main.log("Controller is connected")
 
@@ -96,16 +103,16 @@ class BaseStation:
             self.radio.write(CAL) 
             # Attempt to read from radio
             line = self.radio.readline()
-            print("line read is: " , line)
+            print("line read is: " , line) 
             # If we got an error (returned 0)
   #          if line == -1:
                # self.main.log("Radios have been physically disconnected. Check USB connection.")
    #         else:
-            self.connected_to_auv = (line == CAL)
-	    if not self.connected_to_auv:
-	        self.main.log("Connection timed out, trying again...")
-    
-            self.main.update()
+            self.connected_to_auv = (line == CAL) or (line == REC)
+
+            if not self.connected_to_auv:
+                self.main.log("Connection timed out, trying again...")
+                self.main.update()
 
     	self.radio.flush()
         self.main.log("Connection established with AUV.")
@@ -117,62 +124,66 @@ class BaseStation:
         ''' 
         Runs the controller loop for the AUV.
         '''
-        try:
-            #Start Control Loop
-            self.radio.write(chr(SPEED_CALIBRATION))
-            self.gpsp.start()
-            curr_time = time.time()
+         #try:
+         #Start Control Loop
+        self.radio.write(chr(SPEED_CALIBRATION))
+       # self.gpsp.start()
+        curr_time = time.time()
 
-            #while self.connected_to_auv:
-            while True:
-                self.main.log("GPS: {}".format(self.gpsp.gpsd.fix.latitude)) 
-
-                #Get pa0cket
-                self.data_packet = self.navController.getPacket()
-                self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
-                print("Data packet: ", self.data_packet)
-            
-                if IS_MANUAL:
-                    delta_time = time.time() - curr_time
-                    self.radio_timer.append( delta_time )
-                    self.radio.write(self.data_packet)
-                    curr_time = time.time()
-                
-                #else:
-                    # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
-                    #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
-                
-                #Reset motor calibration
-                self.cal_flag = NO_CALIBRATION  
-                if ord(self.data_packet[3]) == 1:
-                    self.main.log("Entering ballast state.")
-                    self.enter_ballast_state() 
-                    self.main.log("Finished ballasting.")
-                    self.radio.write(chr(speed_callibration))
-                
-                # Await response from AUV.
-                if self.radio.readline() != 'REC\n':
-                
-                    self.connected_to_auv = False
-                
-                    print("WARNING - AUV disconnected. Attempting to reconnect.")
-                
-                    self.calibrate_communication()
-                
-                    data = self.radio.readline()
-                
-                time.sleep(DELAY)
-                self.main.update()
+        #while self.connected_to_auv:
+        while True:
+            self.main.log("GPS: {}".format(self.gpsp.gpsd.fix.latitude)) 
+            self.navController.handle()
+#             #Get pa0cket
+#             self.data_packet = self.navController.getPacket()
+#             self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
+#             print("Data packet: ", self.data_packet)
         
-        except (KeyboardInterrupt, SystemExit, Exception): #when you press ctrl+c
-            print "\nKilling Thread..."
-            self.gpsp.running = False
-            self.gpsp.join() # wait for the thread to finish what it's doing
-        print("Done.\nExiting.")
+#             if IS_MANUAL:
+#                 delta_time = time.time() - curr_time
+#                 self.radio_timer.append( delta_time )
+#                # print("writing json data of: " , json.dumps(self.test_dict) )
+#                 self.radio.write(self.data_packet)
+#                 #self.radio.write(json.dumps(self.test_dict) + '\n')
+#                 curr_time = time.time()
+            
+#             #else:
+#                 # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
+#                 #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
+            
+#             #Reset motor calibration
+#             self.cal_flag = NO_CALIBRATION  
+#             if ord(self.data_packet[3]) == 1:
+#                 self.main.log("Entering ballast state.")
+#                 self.enter_ballast_state() 
+#                 self.main.log("Finished ballasting.")
+#                 self.radio.write(chr(SPEED_CALIBRATION))
+            
+#             # Await response from AUV.
+#             if self.radio.readline() != 'REC\n':
+            
+#                 self.connected_to_auv = False
+            
+#                 print("WARNING - AUV disconnected. Attempting to reconnect.")
+            
+#                 self.calibrate_communication()
+            
+# #                data = self.radio.readline()
+            
+#             time.sleep(DELAY)
+        self.main.update()
+    
+        #except (KeyboardInterrupt, SystemExit, Exception): #when you press ctrl+c
+           # print "\nKilling Thread..."
+            #self.gpsp.running = False
+            #self.gpsp.join() # wait for the thread to finish what it's doing
+        #print("Done.\nExiting.")
             
 
     def enter_ballast_state(self): 
-        print(self.radio_timer)
+        #print("ballaststate packet", self.data_packet)
+        #self.radio.write(self.data_packet)
+        print("self.ballast_depth is: ", self.ballast_depth)
         reconnected_after_ballasting = False
         while not reconnected_after_ballasting:
             data = self.radio.readline()
@@ -180,6 +191,10 @@ class BaseStation:
                 print("data recieved is done, exiting ballasting")
                 reconnected_after_ballasting = True
 	    return
+    def manual_control(self, left, right, front, back):
+        print('Set manual control: ', left, right, front, back)
+    def ballast(self):
+        print("Setting ballast")
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
 

@@ -260,12 +260,13 @@ root.protocol("WM_DELETE_WINDOW", Main.on_closing)
 root.update_idletasks()
 root.update()
 radio_connected = False
+
 while bs.joy is None:
     bs.calibrate_controller()
 
 while not bs.connected_to_auv:
     bs.calibrate_communication()
     
-#print("controller connected, starting run()")
+print("controller connected, starting run()")
 bs.run()
 #root.mainloop()

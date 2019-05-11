@@ -6,7 +6,7 @@ import math
 import os
 
 class NavController:
-	def __init__(self, joy, debug=False):
+	def __init__(self, joy, button_cb, debug=False):
 		self.joy = joy
 		self.counter = 0
 		self.state = None
@@ -15,75 +15,57 @@ class NavController:
 		self.motorIncrements = 8
 		self.maxSpeed = 100
 		self.debug = debug	
-	def getPacket(self):
+		self.cb = button_cb
 
+	def handle(self):
 		motorSpeedRight = 0
 		motorSpeedLeft = 0	
-		ballastSpeed = 0
-		ballast = 0
+		# ballastSpeed = 0
+		# ballast = 0
 
 		# In place turn
-		if self.joy.rightBumper():
+		in_place_turn = self.joy.rightBumper()  # Press right bumper for in place turn
+		forward_drive = self.joy.rightTrigger()  # Right trigger speed
+		backward_drive = self.joy.leftTrigger()  # Left trigger speed
+		ballast = self.joy.B()
+		# print("[CONTL]", in_place_turn, forward_drive, backward_drive, ballast)
+
+
+
+		if in_place_turn:
 				rightStickValue = math.floor(self.joy.rightX() * self.motorIncrements) / self.motorIncrements
 
-				motorSpeedRight = 75#int(self.turnSpeed * (-rightStickValue))
-				motorSpeedLeft = 75#int(self.turnSpeed * rightStickValue)
+				motorSpeedRight = int(self.turnSpeed * (-rightStickValue))
+				motorSpeedLeft = int(self.turnSpeed * rightStickValue)
 				motorSpeedBase = 0
+				self.cb['MAN'](motorSpeedLeft, motorSpeedRight, 0, 0)
 		# Left, right, down, up controls
-		else:
-				self.rightTrig = self.joy.rightTrigger()
-				if self.rightTrig > 0:
-					motorSpeedBase = int(self.rightTrig*self.maxSpeed)
-					
-				else:
-					motorSpeedBase = int(-1*self.joy.leftTrigger() * self.maxSpeed)
+		elif forward_drive or backward_drive:
+			if forward_drive:
+				motorSpeedBase = int(forward_drive*self.maxSpeed)	
+			elif backward_drive:
+				motorSpeedBase = int(-1*backward_drive * self.maxSpeed)
+			
+			# Don't change; Raman's magic code
+			leftStickValue = math.floor( ( (self.joy.leftX() + 1) / 2) * self.motorIncrements) / self.motorIncrements
+			motorSpeedLeft = int(leftStickValue * motorSpeedBase)
+			motorSpeedRight = int((1 - leftStickValue) * motorSpeedBase) 
 
-				# Don't change; Raman's magic code
-				leftStickValue = math.floor( ( (self.joy.leftX() + 1 ) / 2) * self.motorIncrements) / self.motorIncrements
-				motorSpeedLeft = int(leftStickValue * motorSpeedBase)
-				motorSpeedRight = int((1 - leftStickValue) * motorSpeedBase) 
-				
-				if self.joy.B():
-					ballast = 1
-					motorSpeedLeft = 0
-					motorSpeedRight = 0
-					#setting ballast speed to half speed downwards
-					ballastSpeed = 125
-				if self.joy.A():
-					self.counter = 0
-                
-				if self.joy.X():
-					self.counter += 1 if self.counter < 99 else self.counter
-					motorSpeedLeft = self.counter
-					motorSpeedRight = self.counter
-					#setting ballast speed to half speed upwards
-					ballastSpeed = 0
-                    
-		if motorSpeedLeft < 0:
+			if motorSpeedLeft < 0:
 				motorSpeedLeft *= -1
 				motorSpeedLeft += 100
 
-		if  motorSpeedRight < 0:
+			if motorSpeedRight < 0:
 				motorSpeedRight *= -1
 				motorSpeedRight += 100
 
-		if ballastSpeed < 0:
-				ballastSpeed *= -1
-				ballastSpeed += 100	
-		if self.debug:
-			print("Base motor ", str(motorSpeedBase)); 
-			print("Left motor ", str(motorSpeedLeft));
-			print("Right motor ", str(motorSpeedRight)); 
+			if self.debug:
+				print("Left motor ", str(motorSpeedLeft));
+				print("Right motor ", str(motorSpeedRight)); 
 
-					
-		speed_f = chr(motorSpeedLeft) + chr(motorSpeedRight) + chr(ballastSpeed) + chr(ballast)
-		"""for i, speed in enumerate(speed_f):
-			print("index ", i)
-			print("is speed: ", speed)
-			
-		print("returning speed_f, which is: ", speed_f)
-		print("lelngth of speed_f is: ", len(speed_f) )"""
+			self.cb['MAN'](motorSpeedLeft, motorSpeedRight, 0, 0)
 
-		return speed_f
+		elif ballast:
+			self.cb['BAL']()
 
 

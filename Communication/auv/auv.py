@@ -6,6 +6,7 @@ import state_Connect
 import state_InitSensors
 import state_ReadRadio
 import state_WaitForAction
+import state_ManualCtrl
 
 # Configure Logging
 log_file_name = "mylog"
@@ -32,7 +33,8 @@ AUV_STATES = {
     'INIT': (state_InitSensors.InitSensors, 'CONNECT'),
     'CONNECT': (state_Connect.Connect, 'READ'),
     'READ': (state_ReadRadio.ReadRadio, 'WAIT'),
-    'WAIT': (state_WaitForAction.WaitForAction, 'READ')
+    'WAIT': (state_WaitForAction.WaitForAction, 'READ'),
+    'MAN': (state_ManualCtrl.ManualCtrl, 'READ')
 }
 
 

@@ -42,7 +42,7 @@ class InitSensors(State):
         # self.calibrate_motors(auv)
 
     def handle(self, auv):
-        raise NotImplementedError()
+        raise RuntimeError("Init state handle should never be called")
 
     def get_state_name(self):
         return 'INIT'

@@ -5,9 +5,8 @@ import sys
 import state_Connect
 import state_InitSensors
 import state_ReadRadio
-import state_WaitForAction
 import state_ManualCtrl
-
+import state_CalibrateMotors
 # Configure Logging
 log_file_name = "mylog"
 if not os.path.exists("log/"):
@@ -32,9 +31,9 @@ logger.addHandler(fh)
 AUV_STATES = {
     'INIT': (state_InitSensors.InitSensors, 'CONNECT'),
     'CONNECT': (state_Connect.Connect, 'READ'),
-    'READ': (state_ReadRadio.ReadRadio, 'WAIT'),
-    'WAIT': (state_WaitForAction.WaitForAction, 'READ'),
-    'MAN': (state_ManualCtrl.ManualCtrl, 'READ')
+    'READ': (state_ReadRadio.ReadRadio, 'READ'),
+    'MAN': (state_ManualCtrl.ManualCtrl, 'READ'),
+    'CAL': (state_CalibrateMotors.CalibrateMotors, 'READ')
 }
 
 
@@ -44,8 +43,9 @@ class AUV():
         self.always_listen = False  # Flag to mark constant pulling from radio
         logger.debug("AUV Initializing")
         self.states = dict()
-        self.next_state = {'last_state': 'READ', 'next_state': 'INIT'}
+        self.state_info = {'last_state': 'READ', 'next_state': 'INIT'}
         self.sensors = None
+        self.mc = None
         self.run_state('INIT')
         logger.info("AUV Started")
 
@@ -61,7 +61,7 @@ class AUV():
         assert adding_state not in self.states.keys(), 'Cannot add ' + adding_state.get_state_name() + 'that already exist in state list!'
         assert adding_state in AUV_STATES.keys(), 'State ' + adding_state + ' not found!'
         self.states[adding_state] = AUV_STATES[adding_state][0](self)
-        self.next_state['next_state'] = AUV_STATES[adding_state][1]
+        self.state_info['next_state'] = AUV_STATES[adding_state][1]
 
     def run_forever(self):
         read_radio = self.next_state_is_read_radio()
@@ -69,7 +69,7 @@ class AUV():
             if next(read_radio):
                 self.run_state('READ')
             else:
-                self.run_state(self.next_state['next_state'])
+                self.run_state(self.state_info['next_state'])
 
     def run_state(self, state_name):
         if state_name not in self.states.keys():
@@ -77,8 +77,8 @@ class AUV():
             self.add_state(state_name)
         else:
             logger.debug("State >> " + state_name)
-            self.next_state = self.states[state_name].handle(self)
-            print(str(self.next_state))
+            self.state_info = self.states[state_name].handle(self)
+            print(str(self.state_info))
 
 
 if __name__ == '__main__':

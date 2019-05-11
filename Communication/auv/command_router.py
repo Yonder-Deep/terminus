@@ -9,7 +9,7 @@ KEYWORDS_HANDLERS = {'CAL': calibrate_motor,
 
 
 def parse_command(current_state_info, json_string):
-    print("JSON->" + json_string + "<-")
+    # print("JSON->" + json_string + "<-")
     decoded_dict = decode_json(json_string)
     assert decoded_dict['cmd'] in KEYWORDS_HANDLERS, 'Handler missing for command ' + decoded_dict['cmd']
-    return KEYWORDS_HANDLERS[decoded_dict['cmd']](decoded_dict)
+    return KEYWORDS_HANDLERS[decoded_dict['cmd']](current_state_info['last_state'], decoded_dict)

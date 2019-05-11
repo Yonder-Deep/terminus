@@ -24,7 +24,7 @@ class CommandIO:
     def __init__(self, radio):
         self.radio = radio
 
-    def send_calibrate(self, l=True, r=True, f=True, b=True):
+    def send_calibrate(self, l=False, r=False, f=False, b=False):
         packet = {'cmd': 'CAL',
                   'l': l,
                   'r': r,

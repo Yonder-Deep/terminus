@@ -32,11 +32,11 @@ class CommandIO:
                   'b': b}
         self.send_dict(packet)
 
-    def send_manual_control(self, left, right, forward, back):
+    def send_manual_control(self, left, right, front, back):
         packet = {'cmd': 'MAN',
                   'l': left,
                   'r': right,
-                  'f': forward,
+                  'f': front,
                   'b': back}
         self.send_dict(packet)
 
@@ -70,7 +70,7 @@ class CommandIO:
 def encode_json(a_dict):
     raw = json.dumps(a_dict)
     assert decode_json(raw)
-    return a_dict
+    return raw
 
 
 def decode_json(a_json_str):
@@ -89,12 +89,12 @@ def decode_json(a_json_str):
         traceback.print_exc()
 
 
-def dict_unicode_to_string(self, data):
+def dict_unicode_to_string(data):
     if isinstance(data, basestring):
         return str(data)
     elif isinstance(data, collections.Mapping):
-        return dict(map(self.dict_unicode_to_string, data.iteritems()))
+        return dict(map(dict_unicode_to_string, data.iteritems()))
     elif isinstance(data, collections.Iterable):
-        return type(data)(map(self.dict_unicode_to_string, data))
+        return type(data)(map(dict_unicode_to_string, data))
     else:
         return data

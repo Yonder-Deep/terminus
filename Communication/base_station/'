@@ -19,11 +19,10 @@ import serial
 import time
 import math
 import argparse
-from nav import xbox
 from nav import NavController
+from nav import xbox
 from radio import Radio
 from bs_gps import *
-import command_io
 
 SPEED_CALIBRATION = 10
 IS_MANUAL = True
@@ -44,7 +43,7 @@ class BaseStation:
         '''
 	# Jack Silberman's radio
 	# Yonder's radio
-        #self.test_dict = {'A':10}
+        self.test_dict = {'A':10}
         self.radio = Radio(RADIO_PATH)
         self.data_packet = []       
         self.joy = None 	
@@ -54,10 +53,6 @@ class BaseStation:
         self.cal_flag = NO_CALIBRATION
         self.radio_timer = []
         self.gpsp = GpsPoller() # create the thread
-        self.ballast_depth = 0
-        self.button_cb = {'MAN':self.manual_control, 'BAL':self.ballast}
-        self.command = None
-
         
        # self.test = json.dumps(self.test_dict)
 
@@ -81,7 +76,7 @@ class BaseStation:
         self.main.log("Xbox controller is connected")                
 
         #Instantiate New NavController With Joystick
-        self.navController = NavController(self.joy, self.button_cb, self.debug)
+        self.navController = NavController(self.joy, self.debug)
         
         self.main.log("Controller is connected")
 
@@ -117,7 +112,6 @@ class BaseStation:
                 self.main.update()
 
     	self.radio.flush()
-        self.command = command_io.CommandIO(self.radio)  # Initialize command processor
         self.main.log("Connection established with AUV.")
 	self.main.comms_status_string.set("Comms Status: Connected")
     def set_calibrate_flag(self, cal_flag):
@@ -136,45 +130,45 @@ class BaseStation:
         #while self.connected_to_auv:
         while True:
             self.main.log("GPS: {}".format(self.gpsp.gpsd.fix.latitude)) 
-            self.navController.handle()
-#             #Get pa0cket
-#             self.data_packet = self.navController.getPacket()
-#             self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
-#             print("Data packet: ", self.data_packet)
+
+            #Get pa0cket
+            self.data_packet = self.navController.getPacket()
+            self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
+            print("Data packet: ", self.data_packet)
         
-#             if IS_MANUAL:
-#                 delta_time = time.time() - curr_time
-#                 self.radio_timer.append( delta_time )
-#                # print("writing json data of: " , json.dumps(self.test_dict) )
-#                 self.radio.write(self.data_packet)
-#                 #self.radio.write(json.dumps(self.test_dict) + '\n')
-#                 curr_time = time.time()
+            if IS_MANUAL:
+                delta_time = time.time() - curr_time
+                self.radio_timer.append( delta_time )
+                print("writing json data of: " , json.dumps(self.test_dict) )
+                #self.radio.write(self.data_packet)
+                self.radio.write(json.dumps(self.test_dict) + '\n')
+                curr_time = time.time()
             
-#             #else:
-#                 # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
-#                 #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
+            #else:
+                # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
+                #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
             
-#             #Reset motor calibration
-#             self.cal_flag = NO_CALIBRATION  
-#             if ord(self.data_packet[3]) == 1:
-#                 self.main.log("Entering ballast state.")
-#                 self.enter_ballast_state() 
-#                 self.main.log("Finished ballasting.")
-#                 self.radio.write(chr(SPEED_CALIBRATION))
+            #Reset motor calibration
+            self.cal_flag = NO_CALIBRATION  
+            if ord(self.data_packet[3]) == 1:
+                self.main.log("Entering ballast state.")
+                self.enter_ballast_state() 
+                self.main.log("Finished ballasting.")
+                self.radio.write(chr(speed_callibration))
             
-#             # Await response from AUV.
-#             if self.radio.readline() != 'REC\n':
+            # Await response from AUV.
+            if self.radio.readline() != 'REC\n':
             
-#                 self.connected_to_auv = False
+                self.connected_to_auv = False
             
-#                 print("WARNING - AUV disconnected. Attempting to reconnect.")
+                print("WARNING - AUV disconnected. Attempting to reconnect.")
             
-#                 self.calibrate_communication()
+                self.calibrate_communication()
             
-# #                data = self.radio.readline()
+#                data = self.radio.readline()
             
-#             time.sleep(DELAY)
-        self.main.update()
+            time.sleep(DELAY)
+            self.main.update()
     
         #except (KeyboardInterrupt, SystemExit, Exception): #when you press ctrl+c
            # print "\nKilling Thread..."
@@ -184,9 +178,7 @@ class BaseStation:
             
 
     def enter_ballast_state(self): 
-        #print("ballaststate packet", self.data_packet)
-        #self.radio.write(self.data_packet)
-        print("self.ballast_depth is: ", self.ballast_depth)
+        print(self.radio_timer)
         reconnected_after_ballasting = False
         while not reconnected_after_ballasting:
             data = self.radio.readline()
@@ -194,16 +186,6 @@ class BaseStation:
                 print("data recieved is done, exiting ballasting")
                 reconnected_after_ballasting = True
 	    return
-    def manual_control(self, left, right, front, back):
-        print('Set manual control: ', left, right, front, back)
-        self.command.send_manual_control(left, right, front, back)
-
-    def ballast(self):
-        target_depth = 50
-        ballast_timeout = 10
-        print("Setting ballast")
-        self.command.send_ballast(target_depth, ballast_timeout)
-        
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
 

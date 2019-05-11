@@ -62,12 +62,13 @@ class AUV():
         self.next_state['next_state'] = AUV_STATES[adding_state][1]
 
     def run_forever(self):
-        read_radio = self.next_state_is_read_radio()
-        while True:
-            if next(read_radio):
-                self.run_state('READ')
-            else:
-                self.run_state(self.next_state['next_state'])
+        self.run_state('READ')
+        # read_radio = self.next_state_is_read_radio()
+        # while True:
+        #     if next(read_radio):
+        #         self.run_state('READ')
+        #     else:
+        #         self.run_state(self.next_state['next_state'])
 
     def run_state(self, state_name):
         if state_name not in self.states.keys():
@@ -76,6 +77,7 @@ class AUV():
         else:
             logger.debug("State >> " + state_name)
             self.next_state = self.states[state_name].handle(self)
+            print(str(self.next_state))
 
 
 if __name__ == '__main__':

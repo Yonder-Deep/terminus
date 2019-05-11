@@ -45,7 +45,7 @@ class Radio:
         Returns the number of bytes in radio buffer
         """
         return self.ser.inWaiting
-    
+
     def isOpen(self):
         """
         Returns a boolean if the serial connection is open.

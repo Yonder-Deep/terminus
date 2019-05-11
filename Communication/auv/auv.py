@@ -65,9 +65,9 @@ class AUV():
         self.state_info['next_state'] = AUV_STATES[adding_state][1]
 
     def run_forever(self):
-        time.sleep(0.1)
         read_radio = self.next_state_is_read_radio()
         while True:
+            time.sleep(0.1)
             if next(read_radio):
                 self.run_state('READ')
             else:

@@ -30,6 +30,7 @@ class RadioManager():
 
     def read(self):
         if self.radio.in_waiting():
+            print("InWaiting->" + str(self.radio.in_waiting()))
             return self.radio.readline()
         else:
             return None

@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import time
 
 import state_Connect
 import state_InitSensors
@@ -64,6 +65,7 @@ class AUV():
         self.state_info['next_state'] = AUV_STATES[adding_state][1]
 
     def run_forever(self):
+        time.sleep(0.1)
         read_radio = self.next_state_is_read_radio()
         while True:
             if next(read_radio):

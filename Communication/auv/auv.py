@@ -42,10 +42,10 @@ class AUV():
         self.always_listen = False  # Flag to mark constant pulling from radio
         logger.debug("AUV Initializing")
         self.states = dict()
-        self.next_state = {'last_state': 'INIT', 'next_state': 'INIT'}
+        self.next_state = {'last_state': 'READ', 'next_state': 'INIT'}
         self.sensors = None
-        logger.info("AUV Started")
         self.run_state('INIT')
+        logger.info("AUV Started")
 
     @staticmethod
     def next_state_is_read_radio():

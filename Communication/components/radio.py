@@ -44,7 +44,7 @@ class Radio:
         """
         Returns the number of bytes in radio buffer
         """
-        return self.ser.inWaiting
+        return self.ser.inWaiting()
 
     def isOpen(self):
         """

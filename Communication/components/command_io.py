@@ -74,7 +74,7 @@ def encode_json(a_dict):
 
 
 def decode_json(a_json_str):
-    print(a_json_str)
+    # print(a_json_str)
     cmd_dict = json.loads(a_json_str)
     cmd_dict = dict_unicode_to_string(cmd_dict)
     try:

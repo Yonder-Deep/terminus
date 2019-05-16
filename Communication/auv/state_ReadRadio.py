@@ -10,9 +10,9 @@ class ReadRadio(State):
         command = auv.radio.read()
         if command:
             # print("Handling command>>")
-            foo = command_router.parse_command(auv.state_info, command)
+            next_state_info = command_router.parse_command(auv.state_info, command)
             # print("ReadRadio returning ->" + str(foo) + "<-")
-            return foo
+            return next_state_info
         else:
             hold_state = auv.state_info['hold_state']
             return {'hold_state': hold_state,

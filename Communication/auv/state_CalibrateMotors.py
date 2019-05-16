@@ -18,14 +18,14 @@ class CalibrateMotors(State):
 
     def handle(self, auv):
         assert auv.mc, 'Motor controller not initialized'
-        state_before_read = auv.state_info['last_state']
+        persistent_state = auv.state_info['last_state']
         state_data = auv.state_info['data']
         if state_data['l']: auv.mc.calibrate_left()
         if state_data['r']: auv.mc.calibrate_right()
         if state_data['f']: auv.mc.calibrate_front()
         if state_data['b']: auv.mc.calibrate_back()
-        return {'last_state': 'CAL',
-                'next_state': state_before_read,
+        return {'last_state': persistent_state,
+                'next_state': persistent_state,
                 'data': dict()}
 
     def get_state_name(self):

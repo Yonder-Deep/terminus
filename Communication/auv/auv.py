@@ -8,6 +8,7 @@ import state_InitSensors
 import state_ReadRadio
 import state_ManualCtrl
 import state_CalibrateMotors
+
 # Configure Logging
 log_file_name = "mylog"
 if not os.path.exists("log/"):
@@ -50,14 +51,6 @@ class AUV():
         self.run_state('INIT')
         logger.info("AUV Started")
 
-    @staticmethod
-    def next_state_is_read_radio():
-        """ Generator that yields an on off for radio"""
-        read = False
-        while True:
-            read = not read
-            yield read
-
     def add_state(self, adding_state):
         assert adding_state not in self.states.keys(), 'Cannot add ' + adding_state.get_state_name() + 'that already exist in state list!'
         assert adding_state in AUV_STATES.keys(), 'State ' + adding_state + ' not found!'
@@ -65,13 +58,9 @@ class AUV():
         self.state_info['next_state'] = AUV_STATES[adding_state][1]
 
     def run_forever(self):
-        read_radio = self.next_state_is_read_radio()
         while True:
             time.sleep(0.1)
-            if next(read_radio):
-                self.run_state('READ')
-            else:
-                self.run_state(self.state_info['next_state'])
+            self.run_state(self.state_info['next_state'])
 
     def run_state(self, state_name):
         if state_name not in self.states.keys():

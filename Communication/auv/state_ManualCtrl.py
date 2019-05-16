@@ -7,12 +7,12 @@ MANUAL_CONTROL_TIMEOUT_SECONDS = 0.5
 
 class ManualCtrl(State):
     def __init__(self, auv):
-        self.handle(auv)
         self.l_speed = 0
         self.r_speed = 0
         self.f_speed = 0
         self.b_speed = 0
         self.last_control_time = time.time()
+        self.handle(auv)
 
     def handle(self, auv):
         assert auv.mc, 'Motor controller not initialized'
@@ -46,9 +46,7 @@ class ManualCtrl(State):
         self.set_speed()
 
     def update_speed(self, left, right, front, back):
-        print(dir(self))
-        print(self.l_speed)
-        if all([right == self.r_speed, front == self.f_speed, back == self.b_speed]):
+        if all([left == self.l_speed, right == self.r_speed, front == self.f_speed, back == self.b_speed]):
             return  # Do nothing if speed unchanged
         else:
             self.l_speed = left

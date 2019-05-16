@@ -59,7 +59,7 @@ class AUV():
 
     def run_forever(self):
         while True:
-            time.sleep(0.1)
+            # time.sleep(0.1)
             self.run_state(self.state_info['next_state'])
 
     def run_state(self, state_name):
@@ -69,7 +69,7 @@ class AUV():
         else:
             logger.debug("State >> " + state_name)
             self.state_info = self.states[state_name].handle(self)
-            print(str(self.state_info))
+            # print(str(self.state_info))
 
 
 if __name__ == '__main__':

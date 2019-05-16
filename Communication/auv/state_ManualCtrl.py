@@ -4,17 +4,20 @@ from state import State
 class ManualCtrl(State):
     def __init__(self, auv):
         self.handle(auv)
+        self.l_speed = 0
+        self.r_speed = 0
+        self.f_speed = 0
+        self.b_speed = 0
 
     def handle(self, auv):
         assert auv.mc, 'Motor controller not initialized'
-        hold_state = auv.state_info['hold_state']
         state_data = auv.state_info['data']
-        left_motor = state_data['l']
-        right_motor = state_data['r']
-        front_motor = state_data['f']
-        back_motor = state_data['b']
-        print("[MAN]", left_motor, right_motor, front_motor, back_motor, end='')
-        auv.mc
+        if 'l' in state_data:
+            self.l_speed = state_data['l']
+            self.r_speed = state_data['r']
+            self.f_speed = state_data['f']
+            self.b_speed = state_data['b']
+        print("[MAN]", self.l_speed, self.r_speed, self.f_speed, self.b_speed, end='')
         # print(str(auv.state_info))
         return {'hold_state': 'MAN',
                 'next_state': 'READ',

@@ -21,7 +21,7 @@ fh = logging.FileHandler("log/{0}.log".format(log_file_name))
 fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 # create formatter and add it to the handlers
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
@@ -69,7 +69,7 @@ class AUV():
         else:
             logger.debug("State >> " + state_name)
             self.state_info = self.states[state_name].handle(self)
-            print(str(self.state_info))
+            # print(str(self.state_info))
 
 
 if __name__ == '__main__':

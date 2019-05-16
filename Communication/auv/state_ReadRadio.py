@@ -11,7 +11,7 @@ class ReadRadio(State):
         if command:
             print("Handling command>>")
             foo = command_router.parse_command(auv.state_info, command)
-            print("ReadRadio returning ->" + str(foo) + "<-")
+            # print("ReadRadio returning ->" + str(foo) + "<-")
             return foo
         else:
             persistent_state = auv.state_info['last_state']

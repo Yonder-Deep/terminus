@@ -46,7 +46,7 @@ class ManualCtrl(State):
         self.set_speed()
 
     def update_speed(self, left, right, front, back):
-        if all([left == self.l_speed, right == self.r_speed, front == self.f_speed, back == self.b_speed]):
+        if all(right == self.r_speed, front == self.f_speed, back == self.b_speed]):
             return  # Do nothing if speed unchanged
         else:
             self.l_speed = left

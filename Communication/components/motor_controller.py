@@ -65,7 +65,7 @@ class MotorController:
         self.front_speed = front
         self.back_speed = back
 
-        print("motors is: ", self.motors)
+        # print("motors is: ", self.motors)
         # Set motor speed
         self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
         #      print("Setting Right Motor to ", data[RIGHT_MOTOR_INDEX])

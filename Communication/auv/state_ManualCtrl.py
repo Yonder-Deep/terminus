@@ -31,7 +31,6 @@ class ManualCtrl(State):
         if time.time() - self.last_control_time > MANUAL_CONTROL_TIMEOUT_SECONDS:
             print("Manual control timed out")
             self.zero_motors()
-            print("1")
             return {'hold_state': 'READ',
                     'next_state': 'READ',
                     'data': dict()}
@@ -41,7 +40,6 @@ class ManualCtrl(State):
                 'data': dict()}
 
     def zero_motors(self):
-        print("2")
         self.l_speed = 0
         self.r_speed = 0
         self.f_speed = 0
@@ -59,7 +57,6 @@ class ManualCtrl(State):
             self.set_speed()
 
     def set_speed(self):
-        print("3")
         print("[MAN]", self.l_speed, self.r_speed, self.f_speed, self.b_speed, end='')
         self.mc.update_motor_speeds(self.l_speed, self.r_speed, self.f_speed, self.b_speed)
 

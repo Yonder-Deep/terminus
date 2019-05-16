@@ -7,15 +7,16 @@ class ManualCtrl(State):
 
     def handle(self, auv):
         assert auv.mc, 'Motor controller not initialized'
-        persistent_state = auv.state_info['last_state']
+        hold_state = auv.state_info['hold_state']
         state_data = auv.state_info['data']
         left_motor = state_data['l']
         right_motor = state_data['r']
         front_motor = state_data['f']
         back_motor = state_data['b']
         print("[MAN]", left_motor, right_motor, front_motor, back_motor, end='')
+        auv.mc
         # print(str(auv.state_info))
-        return {'last_state': persistent_state,
+        return {'hold_state': hold_state,
                 'next_state': 'READ',
                 'data': dict()}
 

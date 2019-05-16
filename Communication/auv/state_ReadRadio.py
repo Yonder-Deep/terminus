@@ -14,9 +14,9 @@ class ReadRadio(State):
             # print("ReadRadio returning ->" + str(foo) + "<-")
             return foo
         else:
-            persistent_state = auv.state_info['last_state']
-            return {'last_state': persistent_state,
-                    'next_state': persistent_state,
+            hold_state = auv.state_info['hold_state']
+            return {'hold_state': hold_state,
+                    'next_state': hold_state,
                     'data': dict()}
 
     def get_state_name(self):

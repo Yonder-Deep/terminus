@@ -16,7 +16,7 @@ class ManualCtrl(State):
         print("[MAN]", left_motor, right_motor, front_motor, back_motor, end='')
         auv.mc
         # print(str(auv.state_info))
-        return {'hold_state': hold_state,
+        return {'hold_state': 'MAN',
                 'next_state': 'READ',
                 'data': dict()}
 

@@ -1,5 +1,5 @@
 from state import State
-
+from __future__ import print_function
 
 class ManualCtrl(State):
     def __init__(self, auv):
@@ -13,8 +13,8 @@ class ManualCtrl(State):
         right_motor = state_data['r']
         front_motor = state_data['f']
         back_motor = state_data['b']
-        print("[MAN]", left_motor, right_motor, front_motor, back_motor)
-        print(str(auv.state_info))
+        print("[MAN]", left_motor, right_motor, front_motor, back_motor, end='')
+        # print(str(auv.state_info))
         return {'last_state': persistent_state,
                 'next_state': 'READ',
                 'data': dict()}

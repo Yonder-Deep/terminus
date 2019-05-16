@@ -12,10 +12,11 @@ class ManualCtrl(State):
         self.f_speed = 0
         self.b_speed = 0
         self.last_control_time = time.time()
+        assert auv.mc, 'Motor controller not initialized'
+        self.mc = auv.mc
         self.handle(auv)
 
     def handle(self, auv):
-        assert auv.mc, 'Motor controller not initialized'
         state_data = auv.state_info['data']
         if 'l' in state_data:
             self.last_control_time = time.time()
@@ -57,7 +58,7 @@ class ManualCtrl(State):
 
     def set_speed(self):
         print("[MAN]", self.l_speed, self.r_speed, self.f_speed, self.b_speed, end='')
-        # TODO: call mc to actually set motors
+        self.mc.update_motor_speeds(self.l_speed, self.r_speed, self.f_speed, self.b_speed)
 
     def get_state_name(self):
         return 'MAN'

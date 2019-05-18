@@ -23,7 +23,7 @@ class Ballast(State):
             # End ballasting
             print("Done ballasting")
 
-        elif time.time() - self.start_time > self.timeout:
+        elif (time.time() - self.start_time) > self.timeout:
             print("[BAL] TIME OUT!!")
             # TODO: If the depth doesn't change by 1m for 10s, reverse motor to come back up
 

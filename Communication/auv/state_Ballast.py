@@ -7,17 +7,17 @@ BALLAST_SPEED = 25
 class Ballast(State):
     def __init__(self, auv):
         print("Initializing ballasting")
-        # assert auv.pressure_sensor
+        assert auv.pressure_sensor
         self.target_depth = auv.state_info['data']['depth']
         self.timeout = auv.state_info['data']['timeout']
         self.start_time = time.time()
         auv.mc.update_motor_speeds(left=0, right=0, front=BALLAST_SPEED, back=BALLAST_SPEED)
 
     def handle(self, auv):
-        # current_depth = auv.pressure_sensor.depth()
+        current_depth = auv.pressure_sensor.depth()
 
-        # TODO: Remove this: for debug use
-        current_depth = time.time() - self.start_time
+        # # TODO: Remove this: for debug use
+        # current_depth = time.time() - self.start_time
 
         if current_depth >= self.target_depth:
             # End ballasting

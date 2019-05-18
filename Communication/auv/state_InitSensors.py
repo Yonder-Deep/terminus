@@ -71,7 +71,8 @@ class InitSensors(State):
         if not auv.pressure_sensor.read():
             print("Pressure sensor did not read data.")
 
-        print("Setting fluid density to salt water")
+        print("Setting fluid density to fresh water")
+        print("Check if we are on FRESH WATER!!!!")
         auv.pressure_sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
         auv.depth = auv.pressure_sensor.depth()
         print("Current depth is ", auv.pressure_sensor.depth(), "(meters)")

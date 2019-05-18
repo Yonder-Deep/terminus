@@ -8,7 +8,7 @@ import state_InitSensors
 import state_ReadRadio
 import state_ManualCtrl
 import state_CalibrateMotors
-
+import state_Ballast
 # Configure Logging
 log_file_name = "mylog"
 if not os.path.exists("log/"):
@@ -35,7 +35,8 @@ AUV_STATES = {
     'CONNECT': (state_Connect.Connect, 'READ'),
     'READ': (state_ReadRadio.ReadRadio, 'READ'),
     'MAN': (state_ManualCtrl.ManualCtrl, 'READ'),
-    'CAL': (state_CalibrateMotors.CalibrateMotors, 'READ')
+    'CAL': (state_CalibrateMotors.CalibrateMotors, 'READ'),
+    'BAL': (state_Ballast.Ballast, 'READ')
 }
 
 

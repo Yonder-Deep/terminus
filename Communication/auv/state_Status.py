@@ -12,7 +12,7 @@ class Status(State):
     def handle(self, auv):
         auv.last_connect = time.time()
         hold_state = auv.state_info['hold_state']
-        auv.command.send_status(current_lat=10, current_lon=10, current_state=hold_state)
+        auv.command.send_status(current_lat=10.0, current_lon=10.0, current_state=hold_state)
         return {'hold_state': hold_state,
                 'next_state': hold_state,
                 'data': dict()}

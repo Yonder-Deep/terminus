@@ -13,28 +13,25 @@ class Ballast(State):
         self.start_time = time.time()
         auv.mc.update_motor_speeds(left=0, right=0, front=BALLAST_SPEED, back=BALLAST_SPEED)
 
-        # TODO: Remove this: for debug use
-        self.start_time = time.time()
-
     def handle(self, auv):
         # current_depth = auv.pressure_sensor.depth()
 
         # TODO: Remove this: for debug use
         current_depth = time.time() - self.start_time
 
-        if current_depth < self.target_depth:
-            print("[BAL] At depth " + str(current_depth))
-            return {'hold_state': 'BAL',
-                    'next_state': 'READ',
-                    'data': dict()}
-
-        elif current_depth >= self.target_depth:
+        if current_depth >= self.target_depth:
             # End ballasting
             print("Done ballasting")
 
         elif time.time() - self.start_time > self.timeout:
             print("[BAL] TIME OUT!!")
             # TODO: If the depth doesn't change by 1m for 10s, reverse motor to come back up
+
+        elif current_depth < self.target_depth:
+            print("[BAL] At depth " + str(current_depth))
+            return {'hold_state': 'BAL',
+                    'next_state': 'READ',
+                    'data': dict()}
 
         # BAL state done
         auv.mc.update_motor_speeds(left=0, right=0, front=0, back=0)

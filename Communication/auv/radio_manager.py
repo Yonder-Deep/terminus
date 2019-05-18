@@ -53,6 +53,7 @@ class RadioManager():
         data = self.radio.readline()
         while data != CAL:
             data = self.radio.readline()
+            print(data)
 
         print('sending_cal')
 

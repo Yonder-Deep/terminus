@@ -15,6 +15,8 @@ REC = 'REC\n'
 # and is sent after communication has been established.
 CAL = 'CAL\n'
 
+ALIVE = '{\"cmd\": \"ALIVE\"}\n'
+
 
 class RadioManager():
     def __init__(self, test_mode=False):
@@ -51,7 +53,8 @@ class RadioManager():
         print("Waiting For Data:")
 
         data = self.radio.readline()
-        while data != CAL:
+        while data != ALIVE:
+            print("Waiting for connection")
             data = self.radio.readline()
             print(data)
 

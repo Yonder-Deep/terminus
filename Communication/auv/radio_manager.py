@@ -38,7 +38,7 @@ class RadioManager():
     def write(self, json_string):
         assert self.radio.isOpen()
         assert isinstance(json_string, str)
-        self.radio.write(json_string + '\n')
+        self.radio.write(json_string)
 
     def calibrate_communication(self):
         """

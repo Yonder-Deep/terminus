@@ -38,7 +38,7 @@ AUV_STATES = {
     'MAN': (state_ManualCtrl.ManualCtrl, 'READ'),
     'CAL': (state_CalibrateMotors.CalibrateMotors, 'READ'),
     'BAL': (state_Ballast.Ballast, 'READ'),
-    'STATUS': (state_Status.State, 'READ')
+    'STATUS': (state_Status.Status, 'READ')
 }
 
 

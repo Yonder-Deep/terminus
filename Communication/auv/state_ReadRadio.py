@@ -11,6 +11,11 @@ class ReadRadio(State):
         auv.last_connect = time.time()
 
     def handle(self, auv):
+        if 'delete_state' in auv.state_info['data'].keys():
+            state_to_delete = auv.state_info['data']['delete_state']
+            assert state_to_delete in auv.states.keys()
+            auv.states.pop(state_to_delete)
+
         print('[COMM] Last Connect:' + str(time.time() - auv.last_connect))
         command = auv.radio.read()
         if command:

@@ -11,7 +11,7 @@ class Ballast(State):
         self.target_depth = auv.state_info['data']['depth']
         self.timeout = auv.state_info['data']['timeout']
         self.start_time = time.time()
-        self.mc.update_motor_speeds(left=0, right=0, front=BALLAST_SPEED, back=BALLAST_SPEED)
+        auv.mc.update_motor_speeds(left=0, right=0, front=BALLAST_SPEED, back=BALLAST_SPEED)
 
         # TODO: Remove this: for debug use
         self.start_time = time.time()
@@ -37,7 +37,7 @@ class Ballast(State):
             # TODO: If the depth doesn't change by 1m for 10s, reverse motor to come back up
 
         # BAL state done
-        self.mc.update_motor_speeds(left=0, right=0, front=0, back=0)
+        auv.mc.update_motor_speeds(left=0, right=0, front=0, back=0)
         return {'hold_state': 'READ',
                 'next_state': 'READ',
                 'data': {'delete_state': 'BAL'}}

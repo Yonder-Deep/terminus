@@ -18,6 +18,7 @@ sys.path.append(imu_sensor_path)
 from radio_manager import *
 import ms5837
 import BNO055
+import command_io
 
 METER_TO_FEET = 3.28024
 
@@ -39,6 +40,7 @@ class InitSensors(State):
         self.calibrate_pressure_sensor(auv)
         self.calibrate_imu_sensor(auv)
         auv.radio.calibrate_communication()
+        auv.command = command_io.CommandIO(auv.radio)  # Initialize command processor
         # self.calibrate_motors(auv)
 
     def handle(self, auv):

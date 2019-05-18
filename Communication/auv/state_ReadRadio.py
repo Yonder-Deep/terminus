@@ -1,12 +1,17 @@
+from __future__ import print_function
 from state import State
 import command_router
+import time
+
 
 class ReadRadio(State):
     def __init__(self, auv):
         assert auv.radio
         assert auv.radio.is_open()
+        auv.last_connect = time.time()
 
     def handle(self, auv):
+        print('[COMM] Last Connect:' + str(time.time() - auv.last_connect), end='\t')
         command = auv.radio.read()
         if command:
             # print("Handling command>>")

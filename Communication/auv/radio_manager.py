@@ -35,6 +35,11 @@ class RadioManager():
         else:
             return None
 
+    def write(self, json_string):
+        assert self.radio.isOpen()
+        assert isinstance(json_string, str)
+        self.radio.write(json_string + '\n')
+
     def calibrate_communication(self):
         """
         Continuously reads strings until CAL code has been received from base station.

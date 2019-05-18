@@ -11,7 +11,7 @@ class ReadRadio(State):
         auv.last_connect = time.time()
 
     def handle(self, auv):
-        print('[COMM] Last Connect:' + str(time.time() - auv.last_connect), end='\t')
+        print('[COMM] Last Connect:' + str(time.time() - auv.last_connect))
         command = auv.radio.read()
         if command:
             # print("Handling command>>")

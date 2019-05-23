@@ -52,6 +52,11 @@ class AUV():
         self.sensors = None
         self.mc = None
         self.run_state('INIT')
+        self.gps_info = {
+            'lat': 0,
+            'lon': 0,
+            'updated': 0.0
+        }
         logger.info("AUV Started")
 
     def add_state(self, adding_state):

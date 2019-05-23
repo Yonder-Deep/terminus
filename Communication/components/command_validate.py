@@ -3,7 +3,7 @@ MAN_ARGS = ['l', 'r', 'f', 'b']
 BAL_ARGS = ['depth', 'timeout']
 NAV_ARGS = ['lat', 'lon']
 ALIVE_ARGS = []
-STATUS_ARGS = ['lat', 'lon', 'state']
+STATUS_ARGS = ['lat', 'lon', 'updated', 'state']
 
 
 def cal_checker(cmd_dict):
@@ -34,6 +34,7 @@ def nav_checker(cmd_dict):
         assert isinstance(cmd_dict[arg], float), 'Argument ' + arg + ' expected to be float for' + str(cmd_dict)
     assert -90 <= cmd_dict['lat'] <= 90, 'Argument lat out of range -90, 90 for ' + str(cmd_dict)
     assert -180 <= cmd_dict['lon'] <= 180, 'Argument lon out of range -180, 180 for' + str(cmd_dict)
+    assert 1558587000 < cmd_dict['updated'] < 7270404600, 'Argument updated has unexpected value' + str(cmd_dict)
 
 
 def alive_checker(cmd_dict):

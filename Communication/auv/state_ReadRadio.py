@@ -2,12 +2,14 @@ from __future__ import print_function
 from state import State
 import command_router
 import time
+import gps_util
 
 
 class ReadRadio(State):
     def __init__(self, auv):
         assert auv.radio
         assert auv.radio.is_open()
+        self.gps_reader = gps_util.ReadGPS(auv)
         auv.last_connect = time.time()
 
     def handle(self, auv):
@@ -24,6 +26,7 @@ class ReadRadio(State):
             # print("ReadRadio returning ->" + str(foo) + "<-")
             return next_state_info
         else:
+            self.gps_reader.handle(auv)  # Read GPS info
             hold_state = auv.state_info['hold_state']
             return {'hold_state': hold_state,
                     'next_state': hold_state,

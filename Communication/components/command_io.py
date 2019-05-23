@@ -56,10 +56,11 @@ class CommandIO:
         packet = {'cmd': 'ALIVE'}
         self.send_dict(packet)
 
-    def send_status(self, current_lat, current_lon, current_state):  # For AUV only
+    def send_status(self, current_lat, current_lon, update_time, current_state):  # For AUV only
         packet = {'cmd': 'STATUS',
                   'lat': current_lat,
                   'lon': current_lon,
+                  'updated': update_time,
                   'state': current_state}
         self.send_dict(packet)
 

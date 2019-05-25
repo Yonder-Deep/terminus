@@ -40,6 +40,7 @@ class InitSensors(State):
         self.calibrate_pressure_sensor(auv)
         self.calibrate_imu_sensor(auv)
         auv.radio.calibrate_communication()
+        auv.base_connected = True
         auv.command = command_io.CommandIO(auv.radio)  # Initialize command processor
         # self.calibrate_motors(auv)
 

@@ -4,6 +4,8 @@ import command_router
 import time
 import gps_util
 
+BASE_DISCONNECT_TIMEOUT = 5
+
 
 class ReadRadio(State):
     def __init__(self, auv):
@@ -18,7 +20,10 @@ class ReadRadio(State):
             assert state_to_delete in auv.states.keys()
             auv.states.pop(state_to_delete)
 
-        print('[COMM] Last Connect:' + str(time.time() - auv.last_connect))
+        # print('[COMM] Last Connect:' + str(time.time() - auv.last_connect))
+        auv.base_connected = (time.time() - auv.last_connect) < BASE_DISCONNECT_TIMEOUT
+        if not auv.base_connected:
+            print('[COMM] Base disconnected. Last communicate: ' + str(time.time() - auv.last_connect))
         command = auv.radio.read()
         if command:
             # print("Handling command>>")
@@ -33,4 +38,4 @@ class ReadRadio(State):
                     'data': dict()}
 
     def get_state_name(self):
-        return 'ReadRadio'
+        return 'Idle'

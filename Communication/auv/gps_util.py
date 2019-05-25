@@ -12,8 +12,8 @@ class ReadGPS():
         self.handle(auv)
 
     def handle(self, auv):
-        try:
-            if self.gps.inWaiting():
+        try:  # Try getting a GPS reading from the incoming nmea string
+            while self.gps.inWaiting():
                 line = self.gps.readline()
                 assert isinstance(line, str)
                 parsed = pynmea2.parse(line)

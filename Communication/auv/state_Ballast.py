@@ -11,11 +11,17 @@ class Ballast(State):
         self.target_depth = auv.state_info['data']['depth']
         self.timeout = auv.state_info['data']['timeout']
         self.start_time = time.time()
+        print("Start ballasting .. Target="+str(self.target_depth)+" Timeout="+str(self.timeout))
         auv.mc.update_motor_speeds(left=0, right=0, front=BALLAST_SPEED, back=BALLAST_SPEED)
 
     def handle(self, auv):
-        current_depth = auv.pressure_sensor.depth()
-
+        if('depth' in auv.state_info['data']):
+            self.target_depth = auv.state_info['data']['depth']
+            self.timeout = auv.state_info['data']['timeout']
+            self.start_time = time.time()
+            
+        auv.pressure_sensor.read()
+        current_depth = auv.pressure_sensor.depth() * 10
         # # TODO: Remove this: for debug use
         # current_depth = time.time() - self.start_time
 

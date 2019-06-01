@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: pi-ina219
+Version: 1.2.0
+Summary: This Python library for Raspberry Pi makes it easy to leverage the complex functionality of the Texas Instruments INA219 sensor to measure voltage, current and power.
+Home-page: https://github.com/chrisb2/pi_ina219/
+Author: Chris Borrill
+Author-email: chris.borrill@gmail.com
+License: MIT
+Description: UNKNOWN
+Keywords: ina219 raspberrypi
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Operating System :: POSIX :: Linux
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Topic :: System :: Hardware :: Hardware Drivers

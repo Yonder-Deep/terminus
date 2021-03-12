@@ -14,5 +14,5 @@ For installation on windows and pinouts, wiring, and tutorials refer to [this](h
 
 ## Contributors
 
-Ian Carrasco, Ruben Chan, Bernard Suwirjo, Raman Kathuria, Arvind Saripalli, Christian Conaway, and Alex Smith.
+Ian Carrasco, Ruben Chan, Bernard Suwirjo, Raman Kathuria, Arvind Saripalli, John Duong, Christian Conaway, and Alex Smith.
 
